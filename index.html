@@ -811,12 +811,20 @@ function getSystemPrompt() {
 }
 
 // ── INIT ──
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('header-client-name').textContent = CLIENT_NAME + "'s TimeBuilder";
-  document.getElementById('pw-input').addEventListener('keydown', e => {
+// Init on load
+function initApp() {
+  var nameEl = document.getElementById('header-client-name');
+  if (nameEl) nameEl.textContent = CLIENT_NAME + "'s TimeBuilder";
+  var pwInput = document.getElementById('pw-input');
+  if (pwInput) pwInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') checkPassword();
   });
-});
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 // ── PASSWORD ──
 function checkPassword() {
