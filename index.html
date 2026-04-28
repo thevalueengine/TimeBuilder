@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TimeBuilder Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #092F4F;
+    --mid-blue: #155D86;
+    --light-blue: #3F6E97;
+    --cyan: #0BBBEF;
+    --cyan-alt: #15B2CD;
+    --pale-cyan: #78C9F1;
+    --white: #ffffff;
+    --off-white: #f4f8fb;
+    --grey-light: #e8f0f6;
+    --grey-mid: #b0c4d4;
+    --text-body: #2a3e52;
+    --success: #1db87a;
+    --amber: #f59e0b;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(9,47,79,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Open Sans',sans-serif; background:var(--navy); color:var(--text-body); min-height:100vh; display:flex; flex-direction:column; overflow:hidden; height:100vh; }
+
+  /* HEADER */
+  header { background:var(--navy); padding:13px 28px; display:flex; align-items:center; gap:13px; border-bottom:1px solid rgba(11,187,239,0.18); flex-shrink:0; }
+  .logo-box { width:34px; height:34px; background:rgba(11,187,239,0.14); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-box svg { width:20px; height:20px; }
+  .brand-text { font-family:'Exo 2',sans-serif; font-weight:800; font-size:1.1rem; color:var(--white); }
+  .brand-sub { font-family:'Exo 2',sans-serif; font-weight:400; font-size:0.66rem; color:var(--pale-cyan); letter-spacing:0.1em; text-transform:uppercase; }
+
+  /* TAB NAV */
+  .tab-nav { background:var(--navy); padding:0 24px; display:flex; gap:2px; border-bottom:2px solid rgba(255,255,255,0.07); flex-shrink:0; overflow-x:auto; }
+  .tab-btn { font-family:'Exo 2',sans-serif; font-weight:600; font-size:0.78rem; letter-spacing:0.04em; text-transform:uppercase; color:var(--pale-cyan); background:none; border:none; padding:11px 16px; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.2s; opacity:0.6; white-space:nowrap; }
+  .tab-btn:hover { opacity:1; color:var(--white); }
+  .tab-btn.active { color:var(--cyan); border-bottom-color:var(--cyan); opacity:1; }
+
+  /* CONTENT */
+  .tab-content { display:none; flex:1; overflow:hidden; }
+  .tab-content.active { display:flex; flex-direction:column; }
+
+  /* ══════════════════════════════
+     HOME TAB
+  ══════════════════════════════ */
+  .home-wrap { flex:1; display:flex; align-items:center; justify-content:center; padding:36px 24px; background:linear-gradient(150deg,var(--navy) 0%,#0b3a60 55%,#0d4878 100%); overflow-y:auto; }
+  .home-inner { max-width:900px; width:100%; text-align:center; }
+  .home-badge { display:inline-block; background:rgba(11,187,239,0.12); border:1px solid rgba(11,187,239,0.28); color:var(--cyan); font-family:'Exo 2',sans-serif; font-size:0.66rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; padding:4px 13px; border-radius:20px; margin-bottom:18px; }
+  .home-title { font-family:'Exo 2',sans-serif; font-size:2.4rem; font-weight:800; color:var(--white); line-height:1.1; margin-bottom:12px; letter-spacing:-0.02em; }
+  .home-title span { color:var(--cyan); }
+  .home-desc { font-size:0.93rem; color:var(--pale-cyan); line-height:1.75; max-width:500px; margin:0 auto 32px; }
+  .home-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; text-align:left; }
+  .home-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); border-radius:var(--radius); padding:20px 16px; cursor:pointer; transition:all 0.25s; }
+  .home-card:hover { background:rgba(11,187,239,0.09); border-color:rgba(11,187,239,0.32); transform:translateY(-2px); box-shadow:var(--shadow); }
+  .card-icon { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:1.15rem; margin-bottom:11px; }
+  .card-icon.daily { background:rgba(29,184,122,0.18); }
+  .card-icon.oto { background:rgba(245,158,11,0.18); }
+  .card-icon.rc { background:rgba(11,187,239,0.18); }
+  .card-icon.pl { background:rgba(21,93,134,0.45); }
+  .home-card h3 { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.88rem; color:var(--white); margin-bottom:5px; }
+  .home-card p { font-size:0.78rem; color:var(--grey-mid); line-height:1.6; }
+  .card-go { display:inline-flex; align-items:center; gap:5px; margin-top:11px; font-family:'Exo 2',sans-serif; font-size:0.7rem; font-weight:700; color:var(--cyan); letter-spacing:0.06em; text-transform:uppercase; }
+
+  /* ══════════════════════════════
+     DAILY TOOLS TAB
+  ══════════════════════════════ */
+  .daily-layout { flex:1; display:grid; grid-template-columns:220px 1fr; overflow:hidden; background:var(--off-white); }
+
+  /* Sidebar nav */
+  .daily-sidebar { background:var(--white); border-right:1px solid var(--grey-light); display:flex; flex-direction:column; overflow-y:auto; }
+  .sidebar-section-label { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--grey-mid); padding:18px 18px 6px; }
+  .sidebar-item { display:flex; align-items:center; gap:10px; padding:10px 18px; cursor:pointer; font-size:0.83rem; color:var(--light-blue); transition:all 0.18s; border-left:3px solid transparent; }
+  .sidebar-item:hover { background:var(--off-white); color:var(--navy); }
+  .sidebar-item.active { background:rgba(11,187,239,0.06); color:var(--navy); border-left-color:var(--cyan); font-weight:600; }
+  .sidebar-item .si-icon { font-size:1rem; width:20px; text-align:center; flex-shrink:0; }
+  .sidebar-divider { height:1px; background:var(--grey-light); margin:10px 0; }
+  .sidebar-upload { margin:12px 14px; background:var(--off-white); border:1.5px dashed var(--grey-light); border-radius:var(--radius-sm); padding:14px; text-align:center; cursor:pointer; transition:border-color 0.2s; }
+  .sidebar-upload:hover { border-color:var(--cyan); }
+  .sidebar-upload-label { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.78rem; color:var(--navy); display:block; margin-bottom:3px; }
+  .sidebar-upload-sub { font-size:0.72rem; color:var(--grey-mid); line-height:1.4; }
+
+  /* Daily panels */
+  .daily-main { display:flex; flex-direction:column; overflow:hidden; }
+  .daily-panel { display:none; flex:1; overflow-y:auto; padding:32px 36px; }
+  .daily-panel.active { display:block; }
+
+  .panel-title { font-family:'Exo 2',sans-serif; font-weight:800; font-size:1.5rem; color:var(--navy); margin-bottom:4px; }
+  .panel-subtitle { font-size:0.88rem; color:var(--light-blue); margin-bottom:24px; }
+
+  .input-card { background:var(--white); border:1px solid var(--grey-light); border-radius:var(--radius); padding:24px; margin-bottom:18px; max-width:720px; }
+  .question-block { margin-bottom:18px; }
+  .question-block:last-child { margin-bottom:0; }
+  .input-label { display:block; font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--mid-blue); margin-bottom:8px; }
+
+  .daily-textarea {
+    width:100%; font-family:'Open Sans',sans-serif; font-size:0.88rem;
+    color:var(--text-body); background:var(--off-white);
+    border:1.5px solid var(--grey-light); border-radius:var(--radius-sm);
+    padding:11px 14px; resize:vertical; min-height:80px;
+    outline:none; transition:border-color 0.2s; line-height:1.55;
+  }
+  .daily-textarea:focus { border-color:var(--cyan); }
+  .daily-textarea::placeholder { color:var(--grey-mid); }
+
+  .action-row { display:flex; justify-content:flex-end; margin-top:18px; }
+  .btn-primary {
+    font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.82rem;
+    letter-spacing:0.04em; color:var(--white);
+    background:var(--navy); border:none;
+    padding:11px 22px; border-radius:var(--radius-sm);
+    cursor:pointer; transition:background 0.2s;
+    display:flex; align-items:center; gap:8px;
+  }
+  .btn-primary:hover { background:var(--mid-blue); }
+  .btn-primary svg { flex-shrink:0; }
+
+  .response-card { background:var(--white); border:1px solid var(--grey-light); border-radius:var(--radius); padding:22px; max-width:720px; display:none; }
+  .response-card.visible { display:block; animation:fadeUp 0.3s ease; }
+  .response-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .response-label { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--cyan-alt); }
+  .btn-copy-small { font-family:'Exo 2',sans-serif; font-weight:600; font-size:0.7rem; letter-spacing:0.05em; text-transform:uppercase; color:var(--light-blue); background:var(--off-white); border:1px solid var(--grey-light); padding:5px 12px; border-radius:6px; cursor:pointer; transition:all 0.2s; }
+  .btn-copy-small:hover { border-color:var(--cyan); color:var(--navy); }
+  .response-body { font-size:0.88rem; line-height:1.7; color:var(--text-body); white-space:pre-wrap; }
+  .thinking { color:var(--grey-mid); font-style:italic; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ══════════════════════════════
+     1-TO-1 TAB
+  ══════════════════════════════ */
+  .oto-layout { flex:1; display:flex; flex-direction:column; background:var(--off-white); overflow:hidden; }
+  .oto-switcher { background:var(--white); border-bottom:1px solid var(--grey-light); padding:0 28px; display:flex; flex-shrink:0; }
+  .oto-switch-btn { font-family:'Exo 2',sans-serif; font-weight:600; font-size:0.78rem; letter-spacing:0.04em; text-transform:uppercase; color:var(--light-blue); background:none; border:none; padding:12px 18px; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-1px; transition:all 0.2s; }
+  .oto-switch-btn:hover { color:var(--navy); }
+  .oto-switch-btn.active { color:var(--navy); border-bottom-color:var(--amber); font-weight:700; }
+  .oto-view { display:none; flex:1; overflow-y:auto; }
+  .oto-view.active { display:block; }
+  .oto-content { max-width:820px; margin:0 auto; padding:32px 32px 52px; }
+
+  .oto-hero { background:linear-gradient(135deg,var(--navy) 0%,var(--mid-blue) 100%); border-radius:var(--radius); padding:28px 32px; margin-bottom:24px; }
+  .oto-hero-badge { display:inline-block; background:rgba(11,187,239,0.18); border:1px solid rgba(11,187,239,0.32); color:var(--cyan); font-family:'Exo 2',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:4px 11px; border-radius:20px; margin-bottom:11px; }
+  .oto-hero h2 { font-family:'Exo 2',sans-serif; font-weight:800; font-size:1.5rem; color:var(--white); line-height:1.2; margin-bottom:9px; }
+  .oto-hero p { font-size:0.86rem; color:var(--pale-cyan); line-height:1.7; max-width:520px; }
+
+  .oto-tip { background:rgba(11,187,239,0.06); border:1px solid rgba(11,187,239,0.18); border-radius:var(--radius); padding:16px 20px; margin-bottom:16px; display:flex; gap:11px; align-items:flex-start; }
+  .tip-icon { font-size:1.2rem; flex-shrink:0; margin-top:1px; }
+  .oto-tip h4 { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.83rem; color:var(--mid-blue); margin-bottom:4px; }
+  .oto-tip p { font-size:0.82rem; color:var(--text-body); line-height:1.65; }
+  .oto-tip strong { font-weight:600; }
+
+  .oto-section { background:var(--white); border:1px solid var(--grey-light); border-radius:var(--radius); margin-bottom:14px; overflow:hidden; }
+  .oto-section-header { padding:16px 22px 0; display:flex; align-items:flex-start; gap:12px; }
+  .oto-num { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Exo 2',sans-serif; font-weight:800; font-size:0.85rem; flex-shrink:0; margin-top:2px; }
+  .oto-section-title { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.93rem; color:var(--navy); margin-bottom:2px; }
+  .oto-section-sub { font-size:0.77rem; color:var(--light-blue); line-height:1.5; }
+  .oto-prompts { padding:12px 22px 18px 66px; display:flex; flex-direction:column; gap:6px; }
+  .prompt-item { display:flex; align-items:flex-start; gap:8px; font-size:0.83rem; color:var(--text-body); line-height:1.6; }
+  .prompt-bullet { width:5px; height:5px; border-radius:50%; flex-shrink:0; margin-top:9px; }
+
+  .col-1 .oto-num{background:rgba(11,187,239,0.13);color:var(--cyan)} .col-1 .prompt-bullet{background:var(--cyan)}
+  .col-2 .oto-num{background:rgba(21,93,134,0.16);color:var(--mid-blue)} .col-2 .prompt-bullet{background:var(--mid-blue)}
+  .col-3 .oto-num{background:rgba(29,184,122,0.13);color:var(--success)} .col-3 .prompt-bullet{background:var(--success)}
+  .col-4 .oto-num{background:rgba(245,158,11,0.13);color:var(--amber)} .col-4 .prompt-bullet{background:var(--amber)}
+  .col-5 .oto-num{background:rgba(120,201,241,0.16);color:var(--light-blue)} .col-5 .prompt-bullet{background:var(--light-blue)}
+
+  .agenda-box { background:var(--navy); border-radius:var(--radius); padding:22px 26px; }
+  .agenda-box h4 { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.75rem; color:var(--cyan); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:11px; }
+  .agenda-item { display:flex; gap:9px; align-items:center; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .agenda-item:last-child { border-bottom:none; }
+  .agenda-num { width:21px; height:21px; border-radius:50%; background:rgba(11,187,239,0.18); border:1px solid rgba(11,187,239,0.28); display:flex; align-items:center; justify-content:center; font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.62rem; color:var(--cyan); flex-shrink:0; }
+  .agenda-text { font-size:0.82rem; color:var(--pale-cyan); line-height:1.5; }
+
+  /* ══════════════════════════════
+     CHAT INTERFACE (RC + PLATE)
+  ══════════════════════════════ */
+  .chat-layout { flex:1; display:grid; grid-template-columns:1fr 320px; overflow:hidden; background:var(--off-white); }
+  .chat-main { display:flex; flex-direction:column; border-right:1px solid var(--grey-light); overflow:hidden; }
+  .chat-header { background:var(--white); padding:14px 22px; border-bottom:1px solid var(--grey-light); display:flex; align-items:center; gap:11px; flex-shrink:0; }
+  .chat-header-icon { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+  .chat-header-icon.rc { background:linear-gradient(135deg,var(--mid-blue),var(--cyan-alt)); }
+  .chat-header-icon.pl { background:linear-gradient(135deg,var(--navy),var(--mid-blue)); }
+  .chat-header-text h2 { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.9rem; color:var(--navy); }
+  .chat-header-text p { font-size:0.72rem; color:var(--light-blue); margin-top:1px; }
+  .chat-messages { flex:1; overflow-y:auto; padding:18px 22px; display:flex; flex-direction:column; gap:11px; scroll-behavior:smooth; }
+  .msg { display:flex; gap:8px; align-items:flex-start; animation:fadeUp 0.3s ease; }
+  .msg.user { flex-direction:row-reverse; }
+  .msg-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:700; flex-shrink:0; font-family:'Exo 2',sans-serif; }
+  .msg.ai .msg-avatar { background:var(--navy); color:var(--cyan); }
+  .msg.user .msg-avatar { background:var(--cyan); color:var(--navy); }
+  .msg-bubble { max-width:74%; padding:10px 14px; border-radius:var(--radius); font-size:0.86rem; line-height:1.65; }
+  .msg.ai .msg-bubble { background:var(--white); border:1px solid var(--grey-light); box-shadow:0 2px 6px rgba(9,47,79,0.06); border-top-left-radius:4px; color:var(--text-body); }
+  .msg.user .msg-bubble { background:var(--mid-blue); color:var(--white); border-top-right-radius:4px; }
+  .typing-indicator { display:flex; align-items:center; gap:4px; padding:10px 14px; background:var(--white); border:1px solid var(--grey-light); border-radius:var(--radius); border-top-left-radius:4px; width:fit-content; }
+  .dot { width:6px; height:6px; background:var(--pale-cyan); border-radius:50%; animation:bounce 1.2s infinite; }
+  .dot:nth-child(2){animation-delay:0.2s} .dot:nth-child(3){animation-delay:0.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+  .chat-input-area { background:var(--white); border-top:1px solid var(--grey-light); padding:12px 16px; flex-shrink:0; }
+  .input-row { display:flex; gap:7px; align-items:flex-end; }
+  .chat-textarea { flex:1; font-family:'Open Sans',sans-serif; font-size:0.86rem; color:var(--text-body); background:var(--off-white); border:1.5px solid var(--grey-light); border-radius:var(--radius-sm); padding:9px 12px; resize:none; min-height:40px; max-height:100px; outline:none; transition:border-color 0.2s; line-height:1.5; }
+  .chat-textarea:focus { border-color:var(--cyan); }
+  .chat-textarea::placeholder { color:var(--grey-mid); }
+  .btn-send { width:40px; height:40px; background:var(--navy); border:none; border-radius:var(--radius-sm); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s; flex-shrink:0; }
+  .btn-send:hover { background:var(--mid-blue); }
+  .btn-send svg { width:15px; height:15px; fill:var(--white); }
+  .btn-voice { width:40px; height:40px; background:var(--off-white); border:1.5px solid var(--grey-light); border-radius:var(--radius-sm); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0; font-size:0.95rem; }
+  .btn-voice:hover { border-color:var(--cyan); }
+  .btn-voice.recording { background:#fee; border-color:#e74c3c; animation:pulse 1s infinite; }
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,0.3)}50%{box-shadow:0 0 0 6px rgba(231,76,60,0)}}
+  .voice-hint { font-size:0.67rem; color:var(--grey-mid); text-align:center; margin-top:5px; }
+
+  /* CHAT SIDEBAR */
+  .output-panel { display:flex; flex-direction:column; background:var(--white); overflow:hidden; }
+  .panel-header { padding:15px 18px 12px; border-bottom:1px solid var(--grey-light); flex-shrink:0; }
+  .panel-header h3 { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.8rem; color:var(--navy); text-transform:uppercase; letter-spacing:0.06em; }
+  .panel-header p { font-size:0.7rem; color:var(--light-blue); margin-top:2px; }
+  .progress-steps { padding:11px 18px; border-bottom:1px solid var(--grey-light); flex-shrink:0; }
+  .step-item { display:flex; align-items:center; gap:7px; padding:4px 0; }
+  .step-dot { width:19px; height:19px; border-radius:50%; border:2px solid var(--grey-light); display:flex; align-items:center; justify-content:center; font-size:0.58rem; font-weight:700; color:var(--grey-mid); flex-shrink:0; transition:all 0.3s; font-family:'Exo 2',sans-serif; }
+  .step-dot.done { background:var(--success); border-color:var(--success); color:var(--white); }
+  .step-dot.active { background:var(--cyan); border-color:var(--cyan); color:var(--navy); }
+  .step-label { font-size:0.72rem; color:var(--grey-mid); transition:color 0.3s; }
+  .step-item.active .step-label { color:var(--navy); font-weight:600; }
+  .step-item.done .step-label { color:var(--success); }
+  .panel-body { flex:1; overflow-y:auto; padding:14px 18px; }
+  .output-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; color:var(--grey-mid); padding:18px; gap:8px; }
+  .output-placeholder .ph-icon { font-size:2rem; opacity:0.35; }
+  .output-placeholder p { font-size:0.77rem; line-height:1.6; }
+  .output-card { background:var(--off-white); border:1.5px solid var(--grey-light); border-radius:var(--radius); padding:14px; font-size:0.8rem; line-height:1.7; color:var(--text-body); display:none; }
+  .output-card.visible { display:block; animation:fadeUp 0.3s ease; }
+  .output-section { margin-bottom:11px; padding-bottom:11px; border-bottom:1px solid var(--grey-light); }
+  .output-section:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .output-label { font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.64rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--cyan-alt); margin-bottom:3px; }
+  .output-text { font-size:0.79rem; color:var(--text-body); line-height:1.65; }
+  .btn-copy { width:100%; margin-top:11px; padding:8px; background:var(--navy); color:var(--white); border:none; border-radius:var(--radius-sm); font-family:'Exo 2',sans-serif; font-weight:600; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; transition:background 0.2s; display:none; }
+  .btn-copy:hover { background:var(--mid-blue); }
+  .btn-copy.visible { display:block; }
+  .btn-reset { width:100%; margin-top:6px; padding:7px; background:transparent; color:var(--light-blue); border:1.5px solid var(--grey-light); border-radius:var(--radius-sm); font-family:'Exo 2',sans-serif; font-weight:600; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
+  .btn-reset:hover { border-color:var(--mid-blue); color:var(--navy); }
+
+  ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--grey-light);border-radius:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-box">
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="8" height="8" rx="1.8" fill="#0BBBEF" opacity="0.9"/>
+      <rect x="11" y="1" width="8" height="8" rx="1.8" fill="#78C9F1" opacity="0.55"/>
+      <rect x="1" y="11" width="8" height="8" rx="1.8" fill="#78C9F1" opacity="0.55"/>
+      <rect x="11" y="11" width="8" height="8" rx="1.8" fill="#0BBBEF" opacity="0.35"/>
+    </svg>
+  </div>
+  <div>
+    <div class="brand-text">TimeBuilder</div>
+    <div class="brand-sub">Manager Companion</div>
+  </div>
+</header>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('home')">Home</button>
+  <button class="tab-btn" onclick="switchTab('daily')">⚡ Daily Tools</button>
+  <button class="tab-btn" onclick="switchTab('oto')">🤝 1-to-1s</button>
+  <button class="tab-btn" onclick="switchTab('rc')">💬 Radical Candor</button>
+  <button class="tab-btn" onclick="switchTab('plate')">🍽️ PLATE</button>
+</div>
+
+<!-- ══ HOME ══ -->
+<div id="tab-home" class="tab-content active">
+  <div class="home-wrap">
+    <div class="home-inner">
+      <div class="home-badge">AI-Powered Manager Tools</div>
+      <h1 class="home-title">Your <span>TimeBuilder</span> Companion</h1>
+      <p class="home-desc">Four tools to help you start sharp, communicate clearly, run better conversations, and delegate with confidence.</p>
+      <div class="home-cards">
+        <div class="home-card" onclick="switchTab('daily')">
+          <div class="card-icon daily">⚡</div>
+          <h3>Daily Tools</h3>
+          <p>Morning check-in, end-of-day review, email decisions, overwhelm support, and voice-to-email.</p>
+          <div class="card-go">Open tools →</div>
+        </div>
+        <div class="home-card" onclick="switchTab('oto')">
+          <div class="card-icon oto">🤝</div>
+          <h3>Great 1-to-1s</h3>
+          <p>Guides for managers and team members to prepare for meaningful one-to-one conversations.</p>
+          <div class="card-go">Open guide →</div>
+        </div>
+        <div class="home-card" onclick="switchTab('rc')">
+          <div class="card-icon rc">💬</div>
+          <h3>Radical Candor</h3>
+          <p>Prepare feedback conversations that are kind, clear, and honest — one step at a time.</p>
+          <div class="card-go">Open tool →</div>
+        </div>
+        <div class="home-card" onclick="switchTab('plate')">
+          <div class="card-icon pl">🍽️</div>
+          <h3>Off My PLATE</h3>
+          <p>Turn vague delegation into structured handovers — so work stays off your plate.</p>
+          <div class="card-go">Open tool →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DAILY TOOLS ══ -->
+<div id="tab-daily" class="tab-content">
+  <div class="daily-layout">
+
+    <!-- Sidebar -->
+    <div class="daily-sidebar">
+      <div class="sidebar-section-label">Functions</div>
+      <div class="sidebar-item active" onclick="showPanel('email',this)">
+        <span class="si-icon">✉️</span> Email &amp; tasks
+      </div>
+      <div class="sidebar-item" onclick="showPanel('voice',this)">
+        <span class="si-icon">🎙️</span> Voice to email
+      </div>
+      <div class="sidebar-item" onclick="showPanel('morning',this)">
+        <span class="si-icon">☀️</span> Morning check-in
+      </div>
+      <div class="sidebar-item" onclick="showPanel('evening',this)">
+        <span class="si-icon">🌙</span> End-of-day review
+      </div>
+      <div class="sidebar-item" onclick="showPanel('overwhelm',this)">
+        <span class="si-icon">△</span> Overwhelm support
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">Your Report</div>
+      <div class="sidebar-upload" onclick="document.getElementById('report-upload').click()">
+        <span class="sidebar-upload-label">Upload report</span>
+        <span class="sidebar-upload-sub">Optional — personalises responses</span>
+        <input type="file" id="report-upload" style="display:none" accept=".pdf,.txt,.docx" onchange="handleReportUpload(event)">
+      </div>
+      <div id="upload-status" style="font-size:0.72rem;color:var(--success);padding:6px 14px;display:none"></div>
+    </div>
+
+    <!-- Panels -->
+    <div class="daily-main">
+
+      <!-- EMAIL -->
+      <div class="daily-panel active" id="panel-email">
+        <h2 class="panel-title">Email &amp; tasks</h2>
+        <p class="panel-subtitle">Paste an email or task — get a clear decision and next step.</p>
+        <div class="input-card">
+          <div class="question-block">
+            <label class="input-label">Paste your email or task here</label>
+            <textarea class="daily-textarea" id="email-input" placeholder="Paste the email or describe the task..." style="min-height:140px;"></textarea>
+          </div>
+          <div class="action-row">
+            <button class="btn-primary" onclick="runEmail()">
+              Decide &amp; act
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="response-card" id="email-response">
+          <div class="response-header">
+            <span class="response-label">Decision &amp; next step</span>
+            <button class="btn-copy-small" onclick="copyText('email-body')">Copy</button>
+          </div>
+          <div class="response-body" id="email-body"></div>
+        </div>
+      </div>
+
+      <!-- VOICE -->
+      <div class="daily-panel" id="panel-voice">
+        <h2 class="panel-title">Voice to email</h2>
+        <p class="panel-subtitle">Paste a rough or voice-written draft — get a clean, concise email.</p>
+        <div class="input-card">
+          <div class="question-block">
+            <label class="input-label">Your rough draft</label>
+            <textarea class="daily-textarea" id="voice-input" placeholder="Paste your rough voice note or draft here..." style="min-height:140px;"></textarea>
+          </div>
+          <div class="action-row">
+            <button class="btn-primary" onclick="runVoice()">
+              Clean it up
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="response-card" id="voice-response">
+          <div class="response-header">
+            <span class="response-label">Cleaned email</span>
+            <button class="btn-copy-small" onclick="copyText('voice-body')">Copy</button>
+          </div>
+          <div class="response-body" id="voice-body"></div>
+        </div>
+      </div>
+
+      <!-- MORNING -->
+      <div class="daily-panel" id="panel-morning">
+        <h2 class="panel-title">Morning check-in</h2>
+        <p class="panel-subtitle">Three quick questions to start your day with focus.</p>
+        <div class="input-card">
+          <div class="question-block">
+            <label class="input-label">What are your top 3 priorities today?</label>
+            <textarea class="daily-textarea" id="morning-q1" placeholder="List them here..." style="min-height:70px;"></textarea>
+          </div>
+          <div class="question-block">
+            <label class="input-label">What might pull you off track?</label>
+            <textarea class="daily-textarea" id="morning-q2" placeholder="People, meetings, habits..." style="min-height:70px;"></textarea>
+          </div>
+          <div class="question-block">
+            <label class="input-label">What do you need to protect today?</label>
+            <textarea class="daily-textarea" id="morning-q3" placeholder="Time, energy, focus..." style="min-height:70px;"></textarea>
+          </div>
+          <div class="action-row">
+            <button class="btn-primary" onclick="runMorning()">
+              Get my focus plan
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="response-card" id="morning-response">
+          <div class="response-header">
+            <span class="response-label">Your focus plan</span>
+            <button class="btn-copy-small" onclick="copyText('morning-body')">Copy</button>
+          </div>
+          <div class="response-body" id="morning-body"></div>
+        </div>
+      </div>
+
+      <!-- EVENING -->
+      <div class="daily-panel" id="panel-evening">
+        <h2 class="panel-title">End-of-day review</h2>
+        <p class="panel-subtitle">Three minutes to close the day and set up tomorrow.</p>
+        <div class="input-card">
+          <div class="question-block">
+            <label class="input-label">What moved forward today?</label>
+            <textarea class="daily-textarea" id="eve-q1" placeholder="Wins, progress, completions..." style="min-height:70px;"></textarea>
+          </div>
+          <div class="question-block">
+            <label class="input-label">Where did you get pulled into low-value work?</label>
+            <textarea class="daily-textarea" id="eve-q2" placeholder="What stole your time today..." style="min-height:70px;"></textarea>
+          </div>
+          <div class="question-block">
+            <label class="input-label">What will you do differently tomorrow?</label>
+            <textarea class="daily-textarea" id="eve-q3" placeholder="One small change..." style="min-height:70px;"></textarea>
+          </div>
+          <div class="action-row">
+            <button class="btn-primary" onclick="runEvening()">
+              Reflect &amp; reset
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="response-card" id="evening-response">
+          <div class="response-header">
+            <span class="response-label">Your reflection</span>
+            <button class="btn-copy-small" onclick="copyText('evening-body')">Copy</button>
+          </div>
+          <div class="response-body" id="evening-body"></div>
+        </div>
+      </div>
+
+      <!-- OVERWHELM -->
+      <div class="daily-panel" id="panel-overwhelm">
+        <h2 class="panel-title">Overwhelm support</h2>
+        <p class="panel-subtitle">Feeling swamped? Tell me what's on your mind — I'll help you simplify.</p>
+        <div class="input-card">
+          <div class="question-block">
+            <label class="input-label">What's overwhelming you right now?</label>
+            <textarea class="daily-textarea" id="overwhelm-input" placeholder="Brain-dump it all here — tasks, worries, decisions, everything..." style="min-height:160px;"></textarea>
+          </div>
+          <div class="action-row">
+            <button class="btn-primary" onclick="runOverwhelm()">
+              Help me simplify
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="response-card" id="overwhelm-response">
+          <div class="response-header">
+            <span class="response-label">Simplified view</span>
+            <button class="btn-copy-small" onclick="copyText('overwhelm-body')">Copy</button>
+          </div>
+          <div class="response-body" id="overwhelm-body"></div>
+        </div>
+      </div>
+
+    </div><!-- /daily-main -->
+  </div>
+</div>
+
+<!-- ══ 1-TO-1 TAB ══ -->
+<div id="tab-oto" class="tab-content">
+  <div class="oto-layout">
+    <div class="oto-switcher">
+      <button class="oto-switch-btn active" onclick="switchOto(this,'team')">👤 Team Member Guide</button>
+      <button class="oto-switch-btn" onclick="switchOto(this,'manager')">🎯 Manager Guide</button>
+    </div>
+
+    <!-- TEAM MEMBER -->
+    <div class="oto-view active" id="oto-team">
+      <div class="oto-content">
+        <div class="oto-hero">
+          <div class="oto-hero-badge">Radical Candor 1-to-1s</div>
+          <h2>Your Guide to a Great 1-to-1</h2>
+          <p>How to prepare, what to think about, and prompts to help you build a great agenda. A great 1-to-1 is your protected space — come prepared with clear talking points.</p>
+        </div>
+        <div class="oto-tip"><div class="tip-icon">💡</div><div><h4>The golden rule</h4><p>A great 1-to-1 is <strong>your</strong> time — about your work, your growth, your challenges, and what you need to thrive. Your manager's job is to listen and support. Your job is to come prepared.</p></div></div>
+        <div class="oto-section col-1"><div class="oto-section-header"><div class="oto-num">1</div><div><div class="oto-section-title">Wins &amp; Progress</div><div class="oto-section-sub">Start with what's gone well — it sets the tone and shows your manager where you're gaining momentum.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>What are you proud of from the last week / fortnight / month?</div><div class="prompt-item"><div class="prompt-bullet"></div>Where have you made progress your manager might not have seen?</div><div class="prompt-item"><div class="prompt-bullet"></div>Any moments where you felt "in flow" or energised — why?</div><div class="prompt-item"><div class="prompt-bullet"></div>What recent feedback have you put into practice?</div></div></div>
+        <div class="oto-section col-2"><div class="oto-section-header"><div class="oto-num">2</div><div><div class="oto-section-title">Challenges &amp; Frictions</div><div class="oto-section-sub">This is where Radical Candor lives — honest, specific, and constructive.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>What's felt hard or unclear recently?</div><div class="prompt-item"><div class="prompt-bullet"></div>Any work that is stuck, slow, or frustrating?</div><div class="prompt-item"><div class="prompt-bullet"></div>Any feedback you'd like to ask for?</div><div class="prompt-item"><div class="prompt-bullet"></div>Where do you feel you need more support, clarity, or resources?</div><div class="prompt-item"><div class="prompt-bullet"></div>Anything in your workload or environment that's getting in the way?</div></div></div>
+        <div class="oto-section col-3"><div class="oto-section-header"><div class="oto-num">3</div><div><div class="oto-section-title">Growth &amp; Development</div><div class="oto-section-sub">About improving your craft and building your long-term path.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>What skills would you like to strengthen right now?</div><div class="prompt-item"><div class="prompt-bullet"></div>Is there something you attempted recently you'd like coaching on?</div><div class="prompt-item"><div class="prompt-bullet"></div>Any habits you want to build or refine?</div><div class="prompt-item"><div class="prompt-bullet"></div>Are there responsibilities you'd like to take on in future?</div></div></div>
+        <div class="oto-section col-4"><div class="oto-section-header"><div class="oto-num">4</div><div><div class="oto-section-title">Collaboration &amp; Team Dynamics</div><div class="oto-section-sub">Healthy teams grow together — this helps surface things early.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>Anything about team communication you'd like to discuss?</div><div class="prompt-item"><div class="prompt-bullet"></div>Any cross-team friction or blockers worth raising?</div><div class="prompt-item"><div class="prompt-bullet"></div>Where have you seen great teamwork recently?</div><div class="prompt-item"><div class="prompt-bullet"></div>Anything you'd like from your manager to help collaboration flow better?</div></div></div>
+        <div class="oto-section col-5"><div class="oto-section-header"><div class="oto-num">5</div><div><div class="oto-section-title">Feedback for Your Manager</div><div class="oto-section-sub">Two-way Radical Candor is essential — they can't grow without your input.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>What's working well about how they support you?</div><div class="prompt-item"><div class="prompt-bullet"></div>What would help you more?</div><div class="prompt-item"><div class="prompt-bullet"></div>Anything they could do differently to make your work easier or more impactful?</div></div></div>
+        <div class="oto-section"><div class="oto-section-header" style="padding-bottom:13px"><div class="oto-num" style="background:rgba(9,47,79,0.1);color:var(--navy)">✓</div><div><div class="oto-section-title">Your Session Agenda</div><div class="oto-section-sub">Two or three strong talking points with specific examples beats a long list every time.</div></div></div><div style="padding:0 22px 22px"><div class="agenda-box"><h4>Simple Agenda Format</h4><div class="agenda-item"><div class="agenda-num">1</div><div class="agenda-text">Wins + Updates</div></div><div class="agenda-item"><div class="agenda-num">2</div><div class="agenda-text">Key challenges I'd like to explore</div></div><div class="agenda-item"><div class="agenda-num">3</div><div class="agenda-text">Feedback I'm seeking</div></div><div class="agenda-item"><div class="agenda-num">4</div><div class="agenda-text">Development / skills focus</div></div><div class="agenda-item"><div class="agenda-num">5</div><div class="agenda-text">Feedback for my manager</div></div><div class="agenda-item"><div class="agenda-num">6</div><div class="agenda-text">Any decisions or next steps needed</div></div></div></div></div>
+      </div>
+    </div>
+
+    <!-- MANAGER -->
+    <div class="oto-view" id="oto-manager">
+      <div class="oto-content">
+        <div class="oto-hero" style="background:linear-gradient(135deg,#0d3b5e 0%,#1a6a9a 100%)">
+          <div class="oto-hero-badge">Manager Guide</div>
+          <h2>How to Run a Great 1-to-1</h2>
+          <p>Your preparation, your mindset, and the questions that turn a routine catch-up into a conversation that actually moves things forward.</p>
+        </div>
+        <div class="oto-tip"><div class="tip-icon">🎯</div><div><h4>The manager's mindset</h4><p>A great 1-to-1 is <strong>not</strong> a status update. Your job is to listen more than you talk, ask better questions, and create space for your team member to think clearly. The agenda belongs to them.</p></div></div>
+        <div class="oto-section col-1"><div class="oto-section-header"><div class="oto-num">1</div><div><div class="oto-section-title">Before the Meeting</div><div class="oto-section-sub">Preparation separates a great manager from a reactive one. Give yourself five minutes.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>What have you observed about this person's work since your last 1-to-1?</div><div class="prompt-item"><div class="prompt-bullet"></div>Is there specific feedback — positive or developmental — you want to bring?</div><div class="prompt-item"><div class="prompt-bullet"></div>Are there team or business updates they need context on?</div><div class="prompt-item"><div class="prompt-bullet"></div>What do you know about their current mood, motivation, or workload?</div><div class="prompt-item"><div class="prompt-bullet"></div>Are there commitments from last time you need to follow up on?</div></div></div>
+        <div class="oto-section col-2"><div class="oto-section-header"><div class="oto-num">2</div><div><div class="oto-section-title">Opening the Conversation</div><div class="oto-section-sub">How you start sets the tone. Avoid diving straight into tasks.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>"How's your week been — what's on your mind?"</div><div class="prompt-item"><div class="prompt-bullet"></div>"What's the most important thing we should talk about today?"</div><div class="prompt-item"><div class="prompt-bullet"></div>"Before we go through your agenda — is there anything pressing I should know?"</div><div class="prompt-item"><div class="prompt-bullet"></div>"On a scale of 1–10, how are you feeling about your work right now? Tell me more."</div></div></div>
+        <div class="oto-section col-3"><div class="oto-section-header"><div class="oto-num">3</div><div><div class="oto-section-title">Coaching Through Challenges</div><div class="oto-section-sub">When they bring a problem, resist the urge to solve it immediately. Coach first.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>"What have you already tried?"</div><div class="prompt-item"><div class="prompt-bullet"></div>"What do you think the root cause is?"</div><div class="prompt-item"><div class="prompt-bullet"></div>"What options do you see from where you're standing?"</div><div class="prompt-item"><div class="prompt-bullet"></div>"What would you do if I wasn't here to ask?"</div><div class="prompt-item"><div class="prompt-bullet"></div>"What support do you actually need from me here?"</div></div></div>
+        <div class="oto-section col-4"><div class="oto-section-header"><div class="oto-num">4</div><div><div class="oto-section-title">Giving Radical Candor Feedback</div><div class="oto-section-sub">Care Personally + Challenge Directly. Specific, timely, always a dialogue.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>Be specific: reference a real moment, not a pattern or personality.</div><div class="prompt-item"><div class="prompt-bullet"></div>Name the behaviour and the impact — not the person.</div><div class="prompt-item"><div class="prompt-bullet"></div>Always end with: "How did it feel from your side?"</div><div class="prompt-item"><div class="prompt-bullet"></div>Praise in the moment — don't save it all for the 1-to-1.</div><div class="prompt-item"><div class="prompt-bullet"></div>Developmental feedback: private and close to the moment.</div></div></div>
+        <div class="oto-section col-5"><div class="oto-section-header"><div class="oto-num">5</div><div><div class="oto-section-title">Inviting Feedback on You</div><div class="oto-section-sub">Two-way Radical Candor doesn't happen by accident — ask for it explicitly.</div></div></div><div class="oto-prompts"><div class="prompt-item"><div class="prompt-bullet"></div>"Is there anything I could do differently to make your job easier?"</div><div class="prompt-item"><div class="prompt-bullet"></div>"What's one thing I do that's genuinely helpful — and one that gets in the way?"</div><div class="prompt-item"><div class="prompt-bullet"></div>"Am I giving you enough clarity / autonomy / support right now?"</div><div class="prompt-item"><div class="prompt-bullet"></div>When you receive feedback: thank them, don't defend. Reflect before you respond.</div></div></div>
+        <div class="oto-section"><div class="oto-section-header" style="padding-bottom:13px"><div class="oto-num" style="background:rgba(9,47,79,0.1);color:var(--navy)">✓</div><div><div class="oto-section-title">Closing Every 1-to-1 Well</div><div class="oto-section-sub">The last two minutes matter more than most managers realise.</div></div></div><div style="padding:0 22px 22px"><div class="agenda-box"><h4>End of Session Checklist</h4><div class="agenda-item"><div class="agenda-num">1</div><div class="agenda-text">Summarise key decisions and actions — who owns what, by when</div></div><div class="agenda-item"><div class="agenda-num">2</div><div class="agenda-text">"Is there anything we didn't get to that you wanted to raise?"</div></div><div class="agenda-item"><div class="agenda-num">3</div><div class="agenda-text">Confirm any commitments you're making on your side</div></div><div class="agenda-item"><div class="agenda-num">4</div><div class="agenda-text">Note one thing to follow up on before the next session</div></div><div class="agenda-item"><div class="agenda-num">5</div><div class="agenda-text">Protect the next session in the diary before you leave</div></div></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RADICAL CANDOR ══ -->
+<div id="tab-rc" class="tab-content">
+  <div class="chat-layout">
+    <div class="chat-main">
+      <div class="chat-header"><div class="chat-header-icon rc">💬</div><div class="chat-header-text"><h2>Radical Candor Feedback Coach</h2><p>Care Personally · Challenge Directly · One step at a time</p></div></div>
+      <div class="chat-messages" id="rc-messages"></div>
+      <div class="chat-input-area">
+        <div class="input-row">
+          <button class="btn-voice" id="rc-voice-btn" onclick="toggleVoice('rc')">🎙️</button>
+          <textarea class="chat-textarea" id="rc-input" placeholder="Type your response here…" rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage('rc')}"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <button class="btn-send" onclick="sendMessage('rc')"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+        </div>
+        <div class="voice-hint">Press 🎙️ to speak, or type and press Enter</div>
+      </div>
+    </div>
+    <div class="output-panel">
+      <div class="panel-header"><h3>Your Feedback Script</h3><p>Built up as we go through the session</p></div>
+      <div class="progress-steps" id="rc-steps">
+        <div class="step-item active" id="rc-step-0"><div class="step-dot active">1</div><span class="step-label">Situation &amp; Context</span></div>
+        <div class="step-item" id="rc-step-1"><div class="step-dot">2</div><span class="step-label">Observable Behaviour</span></div>
+        <div class="step-item" id="rc-step-2"><div class="step-dot">3</div><span class="step-label">Impact</span></div>
+        <div class="step-item" id="rc-step-3"><div class="step-dot">4</div><span class="step-label">Desired Outcome</span></div>
+        <div class="step-item" id="rc-step-4"><div class="step-dot">5</div><span class="step-label">Feedback Script</span></div>
+      </div>
+      <div class="panel-body">
+        <div class="output-placeholder" id="rc-placeholder"><div class="ph-icon">✍️</div><p>Your feedback script will appear here as you work through the coaching conversation.</p></div>
+        <div class="output-card" id="rc-output"></div>
+        <button class="btn-copy" id="rc-copy" onclick="copyOutput('rc')">📋 Copy Script</button>
+        <button class="btn-reset" onclick="resetChat('rc')">↺ Start New Session</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLATE ══ -->
+<div id="tab-plate" class="tab-content">
+  <div class="chat-layout">
+    <div class="chat-main">
+      <div class="chat-header"><div class="chat-header-icon pl">🍽️</div><div class="chat-header-text"><h2>Off My PLATE Manager Coach</h2><p>Problem · Locate · Alternatives · Tell · End Point</p></div></div>
+      <div class="chat-messages" id="plate-messages"></div>
+      <div class="chat-input-area">
+        <div class="input-row">
+          <button class="btn-voice" id="plate-voice-btn" onclick="toggleVoice('plate')">🎙️</button>
+          <textarea class="chat-textarea" id="plate-input" placeholder="Type your response here…" rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage('plate')}"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <button class="btn-send" onclick="sendMessage('plate')"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+        </div>
+        <div class="voice-hint">Press 🎙️ to speak, or type and press Enter</div>
+      </div>
+    </div>
+    <div class="output-panel">
+      <div class="panel-header"><h3>Your PLATE Handover</h3><p>Delegation document built in real time</p></div>
+      <div class="progress-steps" id="plate-steps">
+        <div class="step-item active" id="plate-step-0"><div class="step-dot active">P</div><span class="step-label">Problem</span></div>
+        <div class="step-item" id="plate-step-1"><div class="step-dot">L</div><span class="step-label">Locate Root Cause</span></div>
+        <div class="step-item" id="plate-step-2"><div class="step-dot">A</div><span class="step-label">Alternatives</span></div>
+        <div class="step-item" id="plate-step-3"><div class="step-dot">T</div><span class="step-label">Tell Your Recommendation</span></div>
+        <div class="step-item" id="plate-step-4"><div class="step-dot">E</div><span class="step-label">End Point / Done</span></div>
+      </div>
+      <div class="panel-body">
+        <div class="output-placeholder" id="plate-placeholder"><div class="ph-icon">📋</div><p>Your PLATE handover document will build here as you work through the conversation.</p></div>
+        <div class="output-card" id="plate-output"></div>
+        <button class="btn-copy" id="plate-copy" onclick="copyOutput('plate')">📋 Copy Handover</button>
+        <button class="btn-reset" onclick="resetChat('plate')">↺ Start New Session</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DAILY TOOLS SYSTEM ───────────────────────────────
+const DAILY_SYSTEM = `You are a practical AI assistant for business owners and managers. Keep all responses short and direct. Reduce pressure, don't add to it. No fluff, no corporate language, no preamble.
+
+Core principles: Not everything needs your input. Reduce before you add. Delegate earlier. Focus beats busyness. Progress over perfection.
+
+For email/task decisions: Give a clear Do/Delegate/Delay/Drop decision with a one-sentence reason, then one immediate next action. If helpful, suggest a short reply they can send.
+
+For voice-to-email cleanup: Rewrite as a clear, concise email. Natural tone. Remove fluff. Then one line: send it / shorten further / delegate sending.
+
+For morning check-in: Give a short practical focus plan. Confirm priorities, flag any concerns, name one thing to protect at all costs. Brief — not a coaching session.
+
+For end-of-day: Brief honest reflection. Acknowledge wins. Name any time patterns directly. One practical thing to try tomorrow. Real, not a pep talk.
+
+For overwhelm: Simplify their situation in 2–3 sentences. Give the 1–2 things that genuinely need attention now. Tell them what to safely ignore. Calm and direct.`;
+
+let reportContext = '';
+
+async function callClaude(userPrompt) {
+  const messages = [];
+  if (reportContext) {
+    messages.push({ role: 'user', content: `My TimeBuilder report context:\n${reportContext}` });
+    messages.push({ role: 'assistant', content: 'Got it — I have your report context and will use it to personalise my responses.' });
+  }
+  messages.push({ role: 'user', content: userPrompt });
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: DAILY_SYSTEM, messages })
+  });
+  const data = await res.json();
+  return data.content?.[0]?.text || 'Something went wrong — please try again.';
+}
+
+function showPanel(id, el) {
+  document.querySelectorAll('.daily-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+function showResult(responseId, bodyId, text) {
+  document.getElementById(responseId).classList.add('visible');
+  document.getElementById(bodyId).innerHTML = text.replace(/\n/g, '<br>');
+}
+
+function showThinking(bodyId) {
+  document.getElementById(bodyId).innerHTML = '<span class="thinking">Thinking…</span>';
+}
+
+async function runEmail() {
+  const input = document.getElementById('email-input').value.trim();
+  if (!input) return;
+  document.getElementById('email-response').classList.add('visible');
+  showThinking('email-body');
+  try {
+    const result = await callClaude(`Email or task to decide on:\n\n${input}\n\nGive me: 1. A clear decision: Do, Delegate, Delay, or Drop — and why in one sentence. 2. The immediate next action (one step only). 3. If relevant, a short reply I can send or adapt. Be direct. No preamble.`);
+    showResult('email-response', 'email-body', result);
+  } catch(e) { showResult('email-response', 'email-body', 'Something went wrong. Please try again.'); }
+}
+
+async function runVoice() {
+  const input = document.getElementById('voice-input').value.trim();
+  if (!input) return;
+  document.getElementById('voice-response').classList.add('visible');
+  showThinking('voice-body');
+  try {
+    const result = await callClaude(`Rough draft to clean up:\n\n${input}\n\nRewrite as a clear, concise email — natural tone, no corporate language. Remove anything unnecessary. After the email, give me one short line: should I send it, shorten it further, or delegate sending it? Just the email and that one line.`);
+    showResult('voice-response', 'voice-body', result);
+  } catch(e) { showResult('voice-response', 'voice-body', 'Something went wrong. Please try again.'); }
+}
+
+async function runMorning() {
+  const q1 = document.getElementById('morning-q1').value.trim();
+  const q2 = document.getElementById('morning-q2').value.trim();
+  const q3 = document.getElementById('morning-q3').value.trim();
+  if (!q1) return;
+  document.getElementById('morning-response').classList.add('visible');
+  showThinking('morning-body');
+  try {
+    const result = await callClaude(`Morning check-in:\n\nTop 3 priorities: ${q1}\nWhat might pull me off track: ${q2||'Not specified'}\nWhat I need to protect: ${q3||'Not specified'}\n\nGive me a short, practical focus plan. Confirm priorities, flag any concerns, give me one thing to protect at all costs. Keep it brief.`);
+    showResult('morning-response', 'morning-body', result);
+  } catch(e) { showResult('morning-response', 'morning-body', 'Something went wrong. Please try again.'); }
+}
+
+async function runEvening() {
+  const q1 = document.getElementById('eve-q1').value.trim();
+  const q2 = document.getElementById('eve-q2').value.trim();
+  const q3 = document.getElementById('eve-q3').value.trim();
+  if (!q1) return;
+  document.getElementById('evening-response').classList.add('visible');
+  showThinking('evening-body');
+  try {
+    const result = await callClaude(`End-of-day review:\n\nWhat moved forward: ${q1}\nWhere I got pulled into low-value work: ${q2||'Not mentioned'}\nWhat I'll do differently tomorrow: ${q3||'Not mentioned'}\n\nBrief, honest reflection. Acknowledge wins. Name any patterns in time lost. One practical thing to try tomorrow. Short and real.`);
+    showResult('evening-response', 'evening-body', result);
+  } catch(e) { showResult('evening-response', 'evening-body', 'Something went wrong. Please try again.'); }
+}
+
+async function runOverwhelm() {
+  const input = document.getElementById('overwhelm-input').value.trim();
+  if (!input) return;
+  document.getElementById('overwhelm-response').classList.add('visible');
+  showThinking('overwhelm-body');
+  try {
+    const result = await callClaude(`I'm overwhelmed. Here's what's on my mind:\n\n${input}\n\nHelp me: 1. Simplify this situation in 2–3 sentences — what's actually going on? 2. Give me the 1–2 things that genuinely need attention right now. 3. Tell me what I can safely ignore or drop for now. Be calm and direct. Reduce, don't add.`);
+    showResult('overwhelm-response', 'overwhelm-body', result);
+  } catch(e) { showResult('overwhelm-response', 'overwhelm-body', 'Something went wrong. Please try again.'); }
+}
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    const btn = el.closest('.response-card').querySelector('.btn-copy-small');
+    const orig = btn.textContent;
+    btn.textContent = '✅ Copied';
+    setTimeout(() => btn.textContent = orig, 1800);
+  });
+}
+
+function handleReportUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('upload-status');
+  status.style.display = 'block';
+  status.textContent = '✅ ' + file.name + ' uploaded';
+  const reader = new FileReader();
+  reader.onload = ev => { reportContext = ev.target.result.substring(0, 3000); };
+  reader.readAsText(file);
+}
+
+// ─── CHAT (RC + PLATE) ───────────────────────────────
+const state = {
+  rc:    { history:[], step:0, outputData:{}, initialized:false },
+  plate: { history:[], step:0, outputData:{}, initialized:false }
+};
+
+const RC_SYSTEM = `You are a Radical Candor Feedback Coach. Help users prepare feedback conversations step by step.
+
+Style: Warm, practical, human. Ask ONE question at a time. No jargon. Care Personally + Challenge Directly throughout.
+
+FLOW (one step per exchange):
+Step 0: Ask about the situation — who's involved, what's the context.
+Step 1: Ask about the specific observable behaviour only (not interpretations).
+Step 2: Ask about the impact on team, work, client, or outcome.
+Step 3: Ask what outcome they'd like from the conversation.
+
+After all 4, produce a short, realistic Radical Candor feedback script. Format: Situation / Behaviour / Impact / Script.
+Signal each step with: STEP_ADVANCE:[0,1,2,3 or DONE]
+Final script ends with: STEP_ADVANCE:DONE
+Append only with final script: OUTPUT_JSON:{"situation":"...","behaviour":"...","impact":"...","script":"..."}`;
+
+const PLATE_SYSTEM = `You are the Off My PLATE Manager Coach. Help managers turn vague delegation into clear structured handovers.
+
+PLATE: P=Problem, L=Locate root cause, A=Alternatives (3 options), T=Tell recommendation, E=End point/Definition of Done.
+
+Style: Practical, warm, direct. ONE question at a time. Challenge gently when vague.
+
+Signal each step: STEP_ADVANCE:[0,1,2,3,4 or DONE]
+Final output = PLATE handover + manager opening message, then: STEP_ADVANCE:DONE
+Append only at end: OUTPUT_JSON:{"problem":"...","rootcause":"...","alternatives":"...","recommendation":"...","endpoint":"...","opening":"..."}`;
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  ['home','daily','oto','rc','plate'].forEach((t,i) => { if(t===tab) document.querySelectorAll('.tab-btn')[i].classList.add('active'); });
+  if(tab==='rc') initChat('rc');
+  if(tab==='plate') initChat('plate');
+}
+
+function switchOto(btn, view) {
+  document.querySelectorAll('.oto-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.oto-switch-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('oto-' + view).classList.add('active');
+  btn.classList.add('active');
+}
+
+function initChat(tool) {
+  if(state[tool].initialized) return;
+  state[tool].initialized = true;
+  const msg = tool==='rc'
+    ? "Hi, I'm your Radical Candor Feedback Coach. I'm here to help you prepare a clear, honest, and caring feedback conversation — one step at a time.\n\nLet's start from the beginning.\n\n**What's the situation?** Who's involved, and what's the context?"
+    : "Hi, I'm your Off My PLATE Coach. My job is to help you get work properly off your plate — handed over with real clarity, not just dumped on someone.\n\nLet's start simple.\n\n**What are you trying to get off your plate?**";
+  addMsg(tool, 'ai', msg);
+}
+
+function addMsg(tool, role, text) {
+  const c = document.getElementById(tool+'-messages');
+  const d = document.createElement('div'); d.className='msg '+role;
+  const av = document.createElement('div'); av.className='msg-avatar'; av.textContent=role==='ai'?'AI':'You';
+  const b = document.createElement('div'); b.className='msg-bubble';
+  b.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  d.appendChild(av); d.appendChild(b); c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+
+function showTyping(tool) {
+  const c=document.getElementById(tool+'-messages');
+  const d=document.createElement('div'); d.className='msg ai'; d.id=tool+'-typing';
+  const av=document.createElement('div'); av.className='msg-avatar'; av.textContent='AI';
+  const b=document.createElement('div'); b.className='typing-indicator';
+  b.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  d.appendChild(av); d.appendChild(b); c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+function removeTyping(tool) { const el=document.getElementById(tool+'-typing'); if(el)el.remove(); }
+
+async function sendMessage(tool) {
+  const inp=document.getElementById(tool+'-input');
+  const text=inp.value.trim(); if(!text) return;
+  inp.value=''; inp.style.height='auto';
+  addMsg(tool,'user',text);
+  state[tool].history.push({role:'user',content:text});
+  showTyping(tool);
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000,
+        system:tool==='rc'?RC_SYSTEM:PLATE_SYSTEM, messages:state[tool].history })
+    });
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'Something went wrong — please try again.';
+    const display=raw.replace(/STEP_ADVANCE:\w+/g,'').replace(/OUTPUT_JSON:\{[\s\S]*?\}/g,'').trim();
+    removeTyping(tool); addMsg(tool,'ai',display);
+    state[tool].history.push({role:'assistant',content:raw});
+    const sm=raw.match(/STEP_ADVANCE:(\w+)/);
+    if(sm){ const v=sm[1]; advanceStep(tool,v==='DONE'?99:parseInt(v)+1); }
+    const jm=raw.match(/OUTPUT_JSON:(\{[\s\S]*?\})/);
+    if(jm){ try{ renderOutput(tool,JSON.parse(jm[1])); }catch(e){} }
+  } catch(err){ removeTyping(tool); addMsg(tool,'ai','Connection issue — please check your internet and try again.'); }
+}
+
+function advanceStep(tool, next) {
+  const cur=state[tool].step;
+  const curEl=document.getElementById(tool+'-step-'+cur);
+  if(curEl){ curEl.classList.remove('active'); curEl.classList.add('done'); const d=curEl.querySelector('.step-dot'); d.className='step-dot done'; d.textContent='✓'; }
+  const nextEl=document.getElementById(tool+'-step-'+next);
+  if(nextEl){ nextEl.classList.add('active'); nextEl.querySelector('.step-dot').className='step-dot active'; state[tool].step=next; }
+}
+
+function renderOutput(tool, data) {
+  document.getElementById(tool+'-placeholder').style.display='none';
+  const card=document.getElementById(tool+'-output');
+  const copy=document.getElementById(tool+'-copy');
+  card.classList.add('visible'); copy.classList.add('visible');
+  const e=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if(tool==='rc'){
+    card.innerHTML=`<div class="output-section"><div class="output-label">Situation</div><div class="output-text">${e(data.situation)}</div></div><div class="output-section"><div class="output-label">Observable Behaviour</div><div class="output-text">${e(data.behaviour)}</div></div><div class="output-section"><div class="output-label">Impact</div><div class="output-text">${e(data.impact)}</div></div><div class="output-section"><div class="output-label">✅ Feedback Script</div><div class="output-text" style="font-style:italic;color:var(--navy)">${e(data.script).replace(/\n/g,'<br>')}</div></div>`;
+  } else {
+    card.innerHTML=`<div class="output-section"><div class="output-label">P — Problem</div><div class="output-text">${e(data.problem)}</div></div><div class="output-section"><div class="output-label">L — Root Cause</div><div class="output-text">${e(data.rootcause)}</div></div><div class="output-section"><div class="output-label">A — Alternatives</div><div class="output-text">${e(data.alternatives).replace(/\n/g,'<br>')}</div></div><div class="output-section"><div class="output-label">T — Recommendation</div><div class="output-text">${e(data.recommendation)}</div></div><div class="output-section"><div class="output-label">E — Definition of Done</div><div class="output-text">${e(data.endpoint).replace(/\n/g,'<br>')}</div></div><div class="output-section"><div class="output-label">💬 Opening Message</div><div class="output-text" style="font-style:italic;color:var(--navy)">${e(data.opening)}</div></div>`;
+  }
+  state[tool].outputData=data;
+}
+
+function copyOutput(tool) {
+  const d=state[tool].outputData;
+  const t=tool==='rc'
+    ?`RADICAL CANDOR FEEDBACK SCRIPT\n\nSituation: ${d.situation}\n\nBehaviour: ${d.behaviour}\n\nImpact: ${d.impact}\n\nFeedback Script:\n${d.script}`
+    :`PLATE HANDOVER\n\nP — Problem: ${d.problem}\n\nL — Root Cause: ${d.rootcause}\n\nA — Alternatives:\n${d.alternatives}\n\nT — Recommendation: ${d.recommendation}\n\nE — Definition of Done:\n${d.endpoint}\n\nManager Opening Message:\n${d.opening}`;
+  navigator.clipboard.writeText(t).then(()=>{
+    const btn=document.getElementById(tool+'-copy');
+    btn.textContent='✅ Copied!';
+    setTimeout(()=>btn.textContent=tool==='rc'?'📋 Copy Script':'📋 Copy Handover',2000);
+  });
+}
+
+function resetChat(tool) {
+  state[tool]={history:[],step:0,outputData:{},initialized:false};
+  document.getElementById(tool+'-messages').innerHTML='';
+  document.getElementById(tool+'-output').classList.remove('visible');
+  document.getElementById(tool+'-copy').classList.remove('visible');
+  document.getElementById(tool+'-placeholder').style.display='';
+  for(let i=0;i<5;i++){
+    const el=document.getElementById(tool+'-step-'+i); if(!el) continue;
+    el.classList.remove('active','done');
+    const dot=el.querySelector('.step-dot'); dot.className='step-dot';
+    dot.textContent=tool==='plate'?['P','L','A','T','E'][i]:String(i+1);
+    if(i===0){el.classList.add('active');dot.className='step-dot active';}
+  }
+  initChat(tool);
+}
+
+const recognitions={rc:null,plate:null};
+function toggleVoice(tool) {
+  const btn=document.getElementById(tool+'-voice-btn');
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){ alert('Voice not supported — try Chrome or Edge.'); return; }
+  if(recognitions[tool]?.active){ recognitions[tool].stop(); return; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const rec=new SR(); rec.lang='en-GB'; rec.continuous=false; rec.interimResults=true; rec.active=true;
+  recognitions[tool]=rec; btn.classList.add('recording');
+  rec.onresult=e=>{ const inp=document.getElementById(tool+'-input'); inp.value=Array.from(e.results).map(r=>r[0].transcript).join(''); inp.style.height='auto'; inp.style.height=inp.scrollHeight+'px'; };
+  rec.onend=()=>{ rec.active=false; btn.classList.remove('recording'); const inp=document.getElementById(tool+'-input'); if(inp.value.trim()) sendMessage(tool); };
+  rec.onerror=()=>{ rec.active=false; btn.classList.remove('recording'); };
+  rec.start();
+}
+</script>
+</body>
+</html>
