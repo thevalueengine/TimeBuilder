@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TimeBuilder Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:      #092F4F;
+  --cyan:      #0BBBEF;
+  --mid-blue:  #155D86;
+  --lt-blue:   #3F6E97;
+  --cyan-alt:  #15B2CD;
+  --pale-cyan: #78C9F1;
+  --white:     #ffffff;
+  --off-white: #F4F8FC;
+  --border:    #D2E6F3;
+  --text:      #1a2e3d;
+  --muted:     #5a7a94;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Open Sans', sans-serif; color: var(--text); background: var(--off-white); }
+h1,h2,h3,h4,h5 { font-family: 'Exo 2', sans-serif; }
+button { cursor: pointer; font-family: 'Open Sans', sans-serif; }
+textarea, input { font-family: 'Open Sans', sans-serif; }
+
+/* LOGIN */
+#screen-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, var(--navy) 0%, var(--mid-blue) 100%);
+}
+.login-card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 64px rgba(9,47,79,0.35);
+  text-align: center;
+}
+.login-logo { margin-bottom: 28px; display: flex; justify-content: center; }
+.login-card h2 { font-size: 1.45rem; color: var(--navy); margin-bottom: 6px; }
+.login-card .login-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
+
+.role-buttons { display: flex; gap: 12px; margin-bottom: 24px; }
+.role-btn {
+  flex: 1;
+  padding: 14px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--off-white);
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--lt-blue);
+  transition: all 0.2s;
+}
+.role-btn:hover { border-color: var(--cyan); color: var(--navy); }
+.role-btn.selected { border-color: var(--navy); background: var(--navy); color: var(--white); }
+
+.pw-section { display: none; }
+.pw-section.visible { display: block; }
+.pw-section input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 10px;
+}
+.pw-section input:focus { border-color: var(--cyan); }
+.pw-section button {
+  width: 100%;
+  padding: 13px;
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  transition: background 0.2s;
+}
+.pw-section button:hover { background: var(--mid-blue); }
+.login-error { color: #c0392b; font-size: 0.85rem; margin-top: 8px; display: none; }
+
+/* APP SHELL */
+#screen-app { display: none; flex-direction: column; min-height: 100vh; }
+
+.app-header {
+  background: var(--navy);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(9,47,79,0.3);
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.header-title { font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--white); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.role-badge {
+  background: rgba(11,187,239,0.18);
+  color: var(--pale-cyan);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Exo 2', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(11,187,239,0.3);
+}
+.btn-logout {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.7);
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.btn-logout:hover { border-color: rgba(255,255,255,0.6); color: var(--white); }
+
+/* TAB NAV */
+.tab-nav {
+  background: var(--white);
+  border-bottom: 2px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.tab-nav::-webkit-scrollbar { height: 0; }
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 16px 20px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  position: relative;
+  transition: color 0.2s;
+}
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 2px;
+  background: var(--cyan);
+  transform: scaleX(0);
+  transition: transform 0.2s;
+}
+.tab-btn:hover { color: var(--navy); }
+.tab-btn.active { color: var(--navy); }
+.tab-btn.active::after { transform: scaleX(1); }
+
+/* MAIN */
+.app-main { flex: 1; overflow-y: auto; padding: 36px 32px; }
+.panel { display: none; max-width: 760px; margin: 0 auto; }
+.panel.active { display: block; }
+
+.panel-header { margin-bottom: 28px; }
+.panel-header h2 { font-size: 1.5rem; color: var(--navy); font-weight: 700; }
+.panel-header p { color: var(--muted); margin-top: 6px; font-size: 0.9rem; line-height: 1.6; }
+
+/* CARDS */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.card h3 { font-size: 1rem; color: var(--navy); margin-bottom: 14px; font-weight: 700; }
+
+/* FORM */
+label { display: block; font-size: 0.875rem; font-weight: 600; color: var(--navy); margin-bottom: 6px; margin-top: 14px; }
+label:first-of-type { margin-top: 0; }
+textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text);
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s;
+  line-height: 1.55;
+}
+textarea:focus { border-color: var(--cyan); }
+.field-hint { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+input[type="text"] {
+  width: 100%;
+  padding: 11px 13px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+input[type="text"]:focus { border-color: var(--cyan); }
+
+/* BUTTONS */
+.btn-primary {
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  padding: 11px 26px;
+  border-radius: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.03em;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: var(--mid-blue); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--navy);
+  border: 2px solid var(--border);
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--cyan); color: var(--mid-blue); }
+
+.btn-cyan {
+  background: var(--cyan);
+  color: var(--white);
+  border: none;
+  padding: 11px 26px;
+  border-radius: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background 0.2s;
+}
+.btn-cyan:hover { background: var(--cyan-alt); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.btn-ghost:hover { color: var(--navy); }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; align-items: center; }
+
+/* LOADING */
+.loading-dots { display: none; align-items: center; gap: 6px; padding: 12px 0; color: var(--muted); font-size: 0.85rem; }
+.loading-dots.visible { display: flex; }
+.dot { width: 7px; height: 7px; background: var(--cyan); border-radius: 50%; animation: bounce 1.2s infinite; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,80%,100% { transform: translateY(0); opacity: 0.5; } 40% { transform: translateY(-6px); opacity: 1; } }
+
+/* CHAT */
+.chat-window { display: flex; flex-direction: column; gap: 14px; margin: 16px 0; min-height: 80px; }
+.msg-wrap { display: flex; flex-direction: column; gap: 3px; }
+.msg-wrap.user-wrap { align-items: flex-end; }
+.msg-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-family: 'Exo 2', sans-serif; padding: 0 4px; }
+.msg {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+.msg-coach { background: var(--navy); color: var(--white); border-bottom-left-radius: 4px; }
+.msg-user { background: rgba(11,187,239,0.1); border: 1px solid rgba(11,187,239,0.22); color: var(--text); border-bottom-right-radius: 4px; }
+
+.chat-input-row { display: flex; gap: 10px; align-items: flex-end; margin-top: 8px; }
+.chat-input-row textarea { flex: 1; min-height: 56px; max-height: 140px; }
+
+/* INFO BOX */
+.info-box {
+  background: rgba(11,187,239,0.07);
+  border: 1px solid rgba(11,187,239,0.25);
+  border-radius: 8px;
+  padding: 12px 15px;
+  font-size: 0.875rem;
+  color: var(--mid-blue);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* MORNING LINK BANNER */
+.link-banner {
+  background: linear-gradient(90deg, rgba(11,187,239,0.09), rgba(11,187,239,0.03));
+  border: 1px solid rgba(11,187,239,0.28);
+  border-radius: 8px;
+  padding: 11px 15px;
+  font-size: 0.85rem;
+  color: var(--mid-blue);
+  margin-bottom: 18px;
+  line-height: 1.55;
+}
+
+/* STEP PROGRESS */
+.step-progress { display: flex; align-items: flex-start; gap: 0; margin-bottom: 24px; }
+.step-item { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; position: relative; }
+.step-item:not(:last-child)::after { content: ''; position: absolute; top: 13px; left: 58%; width: 84%; height: 2px; background: var(--border); }
+.step-item.done:not(:last-child)::after { background: var(--cyan); }
+.step-circle { width: 27px; height: 27px; border-radius: 50%; border: 2px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; color: var(--muted); font-family: 'Exo 2', sans-serif; position: relative; z-index: 1; transition: all 0.3s; }
+.step-item.active .step-circle { border-color: var(--cyan); color: var(--cyan); background: rgba(11,187,239,0.08); }
+.step-item.done .step-circle { border-color: var(--cyan); background: var(--cyan); color: var(--white); }
+.step-label { font-size: 0.68rem; font-weight: 600; color: var(--muted); font-family: 'Exo 2', sans-serif; text-align: center; }
+.step-item.active .step-label { color: var(--navy); }
+.step-item.done .step-label { color: var(--cyan-alt); }
+
+/* GUIDE */
+.guide-section { margin-bottom: 22px; }
+.guide-section h4 { font-size: 0.95rem; color: var(--navy); margin-bottom: 8px; font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.guide-section p { font-size: 0.9rem; line-height: 1.7; color: var(--text); margin-bottom: 7px; }
+.guide-section ul { padding-left: 18px; }
+.guide-section ul li { font-size: 0.9rem; line-height: 1.7; color: var(--text); margin-bottom: 4px; }
+
+/* COPY SUCCESS */
+.copy-success { font-size: 0.8rem; color: var(--cyan-alt); font-weight: 600; display: none; }
+.copy-success.visible { display: inline; }
+
+/* OUTPUT BLOCK */
+.output-block {
+  background: var(--off-white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--cyan);
+  border-radius: 8px;
+  padding: 20px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  display: none;
+  margin-top: 16px;
+}
+.output-block.visible { display: block; }
+.output-label { font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cyan-alt); margin-bottom: 10px; }
+
+/* OPTIONAL TOGGLE */
+.optional-section { border-top: 1px dashed var(--border); margin-top: 18px; padding-top: 14px; }
+.optional-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--muted); font-size: 0.85rem; font-weight: 600; font-family: 'Exo 2', sans-serif; background: none; border: none; padding: 0; margin-bottom: 12px; }
+.optional-toggle:hover { color: var(--navy); }
+.optional-toggle svg { transition: transform 0.2s; }
+.optional-toggle.open svg { transform: rotate(90deg); }
+.optional-fields { display: none; }
+.optional-fields.open { display: block; }
+
+/* VOICE BUTTON */
+.voice-btn {
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-family: 'Open Sans', sans-serif;
+  flex-shrink: 0;
+}
+.voice-btn:hover { border-color: var(--cyan); color: var(--mid-blue); }
+.voice-btn.listening { border-color: #e74c3c; color: #e74c3c; background: rgba(231,76,60,0.07); animation: pulse-mic 1.2s infinite; }
+@keyframes pulse-mic { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+.input-with-voice { position: relative; }
+.voice-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 4px; }
+.voice-row textarea, .voice-row input { flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- WELCOME OVERLAY -->
+<div id="welcome-overlay" style="display:none;position:fixed;inset:0;background:rgba(9,47,79,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:16px;padding:40px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(9,47,79,0.4);">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.5rem;color:#092F4F;margin-bottom:6px;">Welcome to TimeBuilder Companion</div>
+      <div style="color:#5a7a94;font-size:0.9rem;">Here's a quick guide to getting the most out of the tool.</div>
+    </div>
+
+    <div id="welcome-manager-content" style="display:none;">
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#F4F8FC;border-radius:8px;">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;color:#0BBBEF;flex-shrink:0;width:32px;text-align:center;">☀</div>
+          <div><div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:#092F4F;margin-bottom:3px;">Morning Check-In</div><div style="font-size:0.85rem;color:#5a7a94;line-height:1.6;">Set your priorities at the start of the day. Optionally get a coaching nudge and have a quick two-way conversation to set yourself up well. Your priorities carry through to the End of Day review.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#F4F8FC;border-radius:8px;">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;color:#0BBBEF;flex-shrink:0;width:32px;text-align:center;">🌙</div>
+          <div><div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:#092F4F;margin-bottom:3px;">End of Day Review</div><div style="font-size:0.85rem;color:#5a7a94;line-height:1.6;">Reflect on the day against what you planned in the morning. Honest, quick, and focused on what matters tomorrow.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#F4F8FC;border-radius:8px;">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;color:#0BBBEF;flex-shrink:0;width:32px;text-align:center;">👥</div>
+          <div><div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:#092F4F;margin-bottom:3px;">One-to-One Guide</div><div style="font-size:0.85rem;color:#5a7a94;line-height:1.6;">A reference guide for running great one-to-ones. Ask your team members to bring a prepared agenda using their version of this app.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#F4F8FC;border-radius:8px;">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;color:#0BBBEF;flex-shrink:0;width:32px;text-align:center;">💬</div>
+          <div><div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:#092F4F;margin-bottom:3px;">Radical Candour</div><div style="font-size:0.85rem;color:#5a7a94;line-height:1.6;">Prepare feedback through a coaching conversation. The tool asks you the right questions and produces guidance you can use in the real conversation.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#F4F8FC;border-radius:8px;">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;color:#0BBBEF;flex-shrink:0;width:32px;text-align:center;">📋</div>
+          <div><div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:#092F4F;margin-bottom:3px;">Off My PLATE</div><div style="font-size:0.85rem;color:#5a7a94;line-height:1.6;">A delegation framework. Share the employee version with your team so they come to you with structured thinking, not just problems.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="welcome-employee-content" style="display:none;">
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#F4F8FC;border-radius:8px;">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;color:#0BBBEF;flex-shrink:0;width:32px;text-align:center;">👥</div>
+          <div><div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:#092F4F;margin-bottom:3px;">One-to-One Guide</div><div style="font-size:0.85rem;color:#5a7a94;line-height:1.6;">Guidance on preparing for your one-to-one, plus an agenda builder. Build your agenda here, then copy or export it to share with your manager before the meeting.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:#F4F8FC;border-radius:8px;">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;color:#0BBBEF;flex-shrink:0;width:32px;text-align:center;">📋</div>
+          <div><div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:#092F4F;margin-bottom:3px;">Off My PLATE</div><div style="font-size:0.85rem;color:#5a7a94;line-height:1.6;">Work through a problem using the PLATE framework before you take it to your manager. The tool coaches you through it step by step, then produces a summary you can copy and share.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#F4F8FC;border-radius:8px;padding:14px;margin-bottom:24px;font-size:0.85rem;color:#5a7a94;line-height:1.6;">
+      <strong style="color:#092F4F;">Voice input tip:</strong> Most text boxes have a microphone button. Press it to start speaking, press again to stop. Your words are added to whatever you've already typed, so you can build up your answer in chunks. The mic uses your browser's built-in speech recognition: it's free and needs no setup, but accuracy varies. For better quality dictation across your whole computer, check out the <strong style="color:#092F4F;">Voice Tools</strong> tab.
+    </div>
+
+    <div style="background:#e8f4fb;border:1px solid #78C9F1;border-radius:8px;padding:14px;margin-bottom:16px;font-size:0.82rem;color:#3F6E97;line-height:1.6;">
+      <strong style="color:#092F4F;">Your privacy:</strong> This tool is powered by Anthropic Claude. Your conversations are not used for AI training. Inputs and outputs are automatically deleted after 7 days. Nothing is shared with third parties.
+    </div>
+
+    <div style="background:#F4F8FC;border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.82rem;color:#5a7a94;line-height:1.6;">
+      <strong style="color:#092F4F;">Saves to this device:</strong> Your password and any saved progress are stored in your browser on this computer. If you switch to a different device or browser, you will need to log in again.
+    </div>
+
+    <button class="btn-primary" style="width:100%;padding:14px;" onclick="dismissWelcome()">Got it, let's go</button>
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn-ghost" onclick="dismissWelcome(true)">Don't show this again</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="screen-login">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="170" height="36" viewBox="0 0 340 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="52" font-family="Exo 2, sans-serif" font-weight="800" font-size="42" fill="#092F4F">The Value Engine</text>
+      </svg>
+    </div>
+    <h2>TimeBuilder Companion</h2>
+    <p class="login-sub">Who are you signing in as?</p>
+
+    <div class="role-buttons">
+      <button class="role-btn" id="btn-role-manager" onclick="selectRole('manager')">Manager</button>
+      <button class="role-btn" id="btn-role-employee" onclick="selectRole('employee')">Employee</button>
+    </div>
+
+    <div class="pw-section" id="pw-section">
+      <input type="password" id="login-password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button onclick="doLogin()">Sign in</button>
+      <div class="login-error" id="login-error">Incorrect password. Please try again.</div>
+    </div>
+    <p style="font-size:0.78rem;color:#8aaec8;margin-top:20px;line-height:1.5;">Your password saves to this device. On a different computer or browser, you will need to sign in again.</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="screen-app">
+  <div class="app-header">
+    <div class="header-left">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <circle cx="13" cy="13" r="12" stroke="#0BBBEF" stroke-width="2"/>
+        <path d="M13 7v6l4 2" stroke="#0BBBEF" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div class="header-title">TimeBuilder Companion</div>
+    </div>
+    <div class="header-right">
+      <span class="role-badge" id="role-badge">Manager</span>
+      <button class="btn-logout" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="tab-nav" id="tab-nav"></div>
+
+  <div class="app-main">
+
+    <!-- MORNING CHECK-IN -->
+    <div class="panel" id="panel-morning">
+      <div class="panel-header">
+        <h2>Morning Check-In</h2>
+        <p>Set your priorities for the day. Quick and focused.</p>
+      </div>
+
+      <div class="card" id="morning-form-card">
+        <h3>Today's priorities</h3>
+        <label for="morning-p1">Priority 1</label>
+        <input type="text" id="morning-p1" placeholder="Your most important task today...">
+        <label for="morning-p2" style="margin-top:10px;">Priority 2</label>
+        <input type="text" id="morning-p2" placeholder="Second priority...">
+        <label for="morning-p3" style="margin-top:10px;">Priority 3</label>
+        <input type="text" id="morning-p3" placeholder="Third priority...">
+
+        <label for="morning-tasks" style="margin-top:14px;">Small tasks to clear today</label>
+        <textarea id="morning-tasks" placeholder="Quick wins, admin, things that need doing..." style="min-height:66px;"></textarea>
+
+        <div class="optional-section">
+          <button class="optional-toggle" id="morning-opt-toggle" onclick="toggleOptional('morning')">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="#5a7a94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Optional extras
+          </button>
+          <div class="optional-fields" id="morning-opt-fields">
+            <label for="morning-stress">Anything that might stress you out today?</label>
+            <textarea id="morning-stress" placeholder="Meetings, conversations, unknowns..." style="min-height:60px;"></textarea>
+            <label for="morning-action" style="margin-top:10px;">One action that would make today feel worthwhile</label>
+            <textarea id="morning-action" placeholder="If I do one thing well today, it's..." style="min-height:60px;"></textarea>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" onclick="saveMorning()">Save my priorities</button>
+          <button class="btn-secondary" onclick="startMorningNudge()">Get a coaching nudge</button>
+        </div>
+      </div>
+
+      <!-- Morning chat -->
+      <div class="card" id="morning-chat-card" style="display:none;">
+        <h3>Coaching nudge</h3>
+        <div class="chat-window" id="morning-chat"></div>
+        <div class="loading-dots" id="morning-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>Thinking...</span></div>
+        <div class="chat-input-row" id="morning-chat-input-row">
+          <textarea id="morning-user-input" placeholder="Reply..." rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMorningChat();}"></textarea>
+          <button class="btn-primary" onclick="sendMorningChat()">Send</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn-ghost" onclick="closeMorningChat()">Close chat and save</button>
+        </div>
+      </div>
+
+      <div id="morning-saved-banner" style="display:none;" class="link-banner">
+        ✓ Priorities saved for today. Your end of day review will pick these up.
+      </div>
+    </div>
+
+    <!-- END OF DAY -->
+    <div class="panel" id="panel-eod">
+      <div class="panel-header">
+        <h2>End of Day Review</h2>
+        <p>How did it go? Honest reflection, five minutes.</p>
+      </div>
+
+      <div id="eod-morning-banner" class="link-banner" style="display:none;"></div>
+
+      <div class="card">
+        <h3>Reflect on today</h3>
+        <label for="eod-wins">What went well?</label>
+        <textarea id="eod-wins" placeholder="Wins, progress, moments worth noting..."></textarea>
+        <div class="field-hint">Even small things count.</div>
+
+        <label for="eod-incomplete">What didn't get done, and why?</label>
+        <textarea id="eod-incomplete" placeholder="Tasks that slipped, what got in the way..."></textarea>
+
+        <label for="eod-different">One thing you'd do differently?</label>
+        <textarea id="eod-different" placeholder="If I had today again, I would..." style="min-height:66px;"></textarea>
+
+        <label for="eod-tomorrow">Top priority for tomorrow?</label>
+        <input type="text" id="eod-tomorrow" placeholder="The one thing I need to nail tomorrow...">
+
+        <div class="btn-row">
+          <button class="btn-primary" onclick="submitEOD()">Get my end of day reflection</button>
+          <button class="btn-secondary" onclick="resetEOD()">Clear</button>
+        </div>
+      </div>
+
+      <div class="loading-dots" id="eod-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>Pulling your day together...</span></div>
+
+      <div class="output-block" id="eod-response">
+        <div class="output-label">Your end of day reflection</div>
+        <div id="eod-response-text"></div>
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="btn-secondary" onclick="resetEOD()">Start again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONE-TO-ONE MANAGER -->
+    <div class="panel" id="panel-onetone-manager">
+      <div class="panel-header">
+        <h2>One-to-One Guide</h2>
+        <p>Your reference for running a great one-to-one. This is their time, not yours.</p>
+      </div>
+      <div class="card">
+        <div class="guide-section">
+          <h4>The mindset</h4>
+          <p>A one-to-one is your team member's time. Your job is to create space for them to think, share and grow. Lead with listening. Ask before you advise.</p>
+          <p>Aim for 45 to 60 minutes. Protect the time. Cancelling sends a powerful signal about how much you value the person.</p>
+        </div>
+        <div class="guide-section">
+          <h4>Before the meeting</h4>
+          <ul>
+            <li>Review your notes from last time. What did you agree? What were they working on?</li>
+            <li>Think about any feedback you want to offer, and whether now is the right moment.</li>
+            <li><strong>Ask your team member to bring a prepared agenda.</strong> They can build one using the One-to-One Guide in their TimeBuilder Companion. A team member who arrives with a clear agenda makes the conversation sharper for both of you.</li>
+          </ul>
+          <div style="margin-top:10px;padding:12px 14px;background:rgba(11,187,239,0.07);border:1px solid rgba(11,187,239,0.25);border-radius:8px;font-size:0.85rem;color:var(--mid-blue);line-height:1.6;">
+            The agenda covers: wins and updates, challenges to explore, what they need from you, development, and any feedback for you. If they haven't done one, ask them to take five minutes before you start.
+          </div>
+        </div>
+        <div class="guide-section">
+          <h4>Opening the conversation</h4>
+          <p>Start with a genuine check-in. Try: "How are you doing, really?" Give them time to answer. Don't rush to the agenda.</p>
+        </div>
+        <div class="guide-section">
+          <h4>Good questions to use</h4>
+          <ul>
+            <li>What's going well that we should protect or build on?</li>
+            <li>What's feeling hard or uncertain right now?</li>
+            <li>What do you need from me this week?</li>
+            <li>What are you learning at the moment?</li>
+            <li>Is there anything you've been sitting on that you haven't raised yet?</li>
+            <li>What would make a real difference to how you're working?</li>
+          </ul>
+        </div>
+        <div class="guide-section">
+          <h4>Giving feedback</h4>
+          <p>This is often the right space for feedback, but only when you're prepared. Use the Radical Candour tab to plan a specific piece of feedback before the meeting.</p>
+        </div>
+        <div class="guide-section">
+          <h4>Closing the conversation</h4>
+          <ul>
+            <li>Summarise any actions, theirs and yours.</li>
+            <li>Ask: "Is there anything we haven't covered that you wanted to raise?"</li>
+            <li>End with something genuine — appreciation, encouragement, acknowledgement.</li>
+          </ul>
+        </div>
+        <div class="guide-section">
+          <h4>After the meeting</h4>
+          <p>Write up your notes straight away. Follow through on anything you said you'd do. Nothing undermines trust faster than a manager who forgets what they promised.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONE-TO-ONE EMPLOYEE -->
+    <div class="panel" id="panel-onetone-employee">
+      <div class="panel-header">
+        <h2>One-to-One Guide</h2>
+        <p>Prepare for your next one-to-one through a quick coaching conversation. The tool will help you think through what to bring, then produce an agenda you can use or share.</p>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <button class="btn-primary" onclick="document.getElementById('emp-onetone-chat-section').scrollIntoView({behavior:'smooth'})" style="width:100%;padding:13px;font-size:0.95rem;">Ready to prepare? Jump straight to the tool ↓</button>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>This is your time</h4>
+          <p>Your one-to-one isn't a status update for your manager. It's time set aside for you. Use it to share what's really going on, ask for what you need, and have the conversations that don't fit into the day-to-day. Your manager's job is to listen, support, and help you move forward. Your job is to come prepared.</p>
+        </div>
+        <div class="guide-section">
+          <h4>What makes a great agenda</h4>
+          <p>You don't need a long list. Two or three clear talking points with specific examples will lead to a far better conversation than a page of notes. Think across five areas:</p>
+          <ul>
+            <li><strong>Wins and progress:</strong> What's gone well? Where have you made progress your manager might not have seen?</li>
+            <li><strong>Challenges and frictions:</strong> What's felt hard, unclear, or stuck? Where do you need more support, clarity, or resource?</li>
+            <li><strong>Growth and development:</strong> What skills do you want to strengthen? Is there something you'd like coaching on?</li>
+            <li><strong>Team and collaboration:</strong> Anything about how the team is working that's worth raising?</li>
+            <li><strong>Feedback for your manager:</strong> What's working well? What would help you more? This goes both ways.</li>
+          </ul>
+        </div>
+        <div class="guide-section">
+          <h4>One thing to remember</h4>
+          <p>Your manager can only support you with what they know. Be honest. If something isn't working, say so. Naming awkward things helps: "This feels a bit difficult to raise, but..."</p>
+        </div>
+      </div>
+
+      <div id="emp-onetone-chat-section" style="scroll-margin-top:80px;">
+        <div class="card" id="emp-onetone-intro-card">
+          <h3>Prepare your agenda</h3>
+          <div class="info-box">Give a brief overview to get started: when is your next 1:1, and is there anything particular on your mind going into it? Don't worry about getting it perfect — the conversation will draw it out.</div>
+          <label for="emp-onetone-overview">Brief overview</label>
+          <textarea id="emp-onetone-overview" placeholder="e.g. My next 1:1 is on Thursday. I want to raise that I'm finding my workload a bit overwhelming but I'm not sure how to bring it up."></textarea>
+          <div style="margin:16px 0 8px;">
+            <label style="font-size:0.875rem;font-weight:600;color:#092F4F;display:block;margin-bottom:10px;">How would you like to work through this?</label>
+            <div style="display:flex;gap:10px;">
+              <button id="onetone-mode-quick" onclick="setOneToOneMode('quick')" class="btn-secondary" style="flex:1;padding:12px 8px;font-size:0.85rem;border:2px solid #0BBBEF;background:#e8f8fd;border-radius:8px;cursor:pointer;transition:all 0.2s;">
+                <div style="font-weight:700;margin-bottom:4px;">⚡ Quick prep</div>
+                <div style="font-size:0.78rem;color:#5a7a94;font-weight:400;">A few questions, then a clear agenda ready to go.</div>
+              </button>
+              <button id="onetone-mode-deep" onclick="setOneToOneMode('deep')" class="btn-secondary" style="flex:1;padding:12px 8px;font-size:0.85rem;border:2px solid #D2E6F3;border-radius:8px;cursor:pointer;transition:all 0.2s;">
+                <div style="font-weight:700;margin-bottom:4px;">🔍 Full prep</div>
+                <div style="font-size:0.78rem;color:#5a7a94;font-weight:400;">A fuller conversation covering all five areas in depth.</div>
+              </button>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:12px;">
+            <button class="btn-primary" onclick="startEmpOneToOne()">Start preparing</button>
+          </div>
+        </div>
+
+        <div class="card" id="emp-onetone-chat-card" style="display:none;">
+          <h3>Agenda preparation</h3>
+          <div class="step-progress" id="emp-onetone-steps">
+            <div class="step-item active" id="emp-onetone-step-1"><div class="step-circle">1</div><div class="step-label">Wins</div></div>
+            <div class="step-item" id="emp-onetone-step-2"><div class="step-circle">2</div><div class="step-label">Challenges</div></div>
+            <div class="step-item" id="emp-onetone-step-3"><div class="step-circle">3</div><div class="step-label">Growth</div></div>
+            <div class="step-item" id="emp-onetone-step-4"><div class="step-circle">4</div><div class="step-label">Agenda</div></div>
+          </div>
+          <div id="emp-onetone-chat" class="chat-messages"></div>
+          <div class="loading-indicator" id="emp-onetone-loading" style="display:none;">
+            <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
+          </div>
+          <div class="input-row" id="emp-onetone-input-row">
+            <textarea id="emp-onetone-user-input" placeholder="Your response..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendEmpOneToOne();}"></textarea>
+            <button class="btn-primary" onclick="sendEmpOneToOne()">Send</button>
+          </div>
+        </div>
+
+        <div class="output-block" id="emp-onetone-output">
+          <div class="output-label">Your 1:1 agenda</div>
+          <div id="emp-onetone-output-text"></div>
+          <div class="btn-row" style="margin-top:14px;">
+            <button class="btn-cyan" onclick="copyEmpOneToOne()">Copy agenda</button>
+            <span class="copy-success" id="emp-onetone-copied">Copied!</span>
+            <button class="btn-ghost" onclick="resetEmpOneToOne()">Start again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RADICAL CANDOUR -->
+    <!-- RADICAL CANDOUR -->
+    <div class="panel" id="panel-rc">
+      <div class="panel-header">
+        <h2>Radical Candour</h2>
+        <p>Prepare a piece of feedback through a coaching conversation. The tool will ask you questions to help you think it through, then produce guidance you can use in the conversation.</p>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <button class="btn-primary" onclick="document.getElementById('rc-tool-anchor').scrollIntoView({behavior:'smooth'})" style="width:100%;padding:13px;font-size:0.95rem;">Already know the framework? Jump straight to the tool ↓</button>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>What is Radical Candour?</h4>
+          <p>Radical Candour is a feedback framework developed by Kim Scott. Great feedback requires two things at once: caring personally about the person, and challenging them directly. Most managers do one or the other. The best do both.</p>
+
+        <div style="margin:20px 0;">
+          <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:500px;display:block;margin:0 auto;">
+            <!-- Quadrant boxes -->
+            <!-- Top-left: Ruinous Empathy -->
+            <rect x="50" y="30" width="190" height="160" rx="8" fill="rgba(9,47,79,0.05)" stroke="#D2E6F3" stroke-width="1.5"/>
+            <!-- Top-right: Radical Candour (highlighted) -->
+            <rect x="260" y="30" width="190" height="160" rx="8" fill="rgba(11,187,239,0.13)" stroke="#0BBBEF" stroke-width="2"/>
+            <!-- Bottom-left: Manipulative Insincerity -->
+            <rect x="50" y="210" width="190" height="160" rx="8" fill="rgba(9,47,79,0.05)" stroke="#D2E6F3" stroke-width="1.5"/>
+            <!-- Bottom-right: Obnoxious Aggression -->
+            <rect x="260" y="210" width="190" height="160" rx="8" fill="rgba(9,47,79,0.05)" stroke="#D2E6F3" stroke-width="1.5"/>
+
+            <!-- Top-left: Ruinous Empathy -->
+            <text x="145" y="90" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" fill="#3F6E97" font-weight="700">Ruinous Empathy</text>
+            <text x="145" y="114" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" fill="#5a7a94">Care ✓  Challenge ✗</text>
+            <text x="145" y="132" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="9" fill="#5a7a94">Ignorance + little change</text>
+
+            <!-- Top-right: Radical Candour -->
+            <text x="355" y="85" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="14" fill="#092F4F" font-weight="800">Radical Candour</text>
+            <text x="355" y="107" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" fill="#155D86">Care personally ✓</text>
+            <text x="355" y="123" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" fill="#155D86">Challenge directly ✓</text>
+            <text x="355" y="145" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="9" fill="#15B2CD" font-weight="600">Growth + profound change</text>
+
+            <!-- Bottom-left: Manipulative Insincerity -->
+            <text x="145" y="268" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" fill="#3F6E97" font-weight="700">Manipulative</text>
+            <text x="145" y="285" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" fill="#3F6E97" font-weight="700">Insincerity</text>
+            <text x="145" y="308" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" fill="#5a7a94">Care ✗  Challenge ✗</text>
+            <text x="145" y="326" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="9" fill="#5a7a94">Mistrust + little change</text>
+
+            <!-- Bottom-right: Obnoxious Aggression -->
+            <text x="355" y="268" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" fill="#3F6E97" font-weight="700">Obnoxious</text>
+            <text x="355" y="285" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" fill="#3F6E97" font-weight="700">Aggression</text>
+            <text x="355" y="308" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" fill="#5a7a94">Challenge ✓  Care ✗</text>
+            <text x="355" y="326" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="9" fill="#5a7a94">Defensiveness + little change</text>
+
+            <!-- Axes -->
+            <line x1="255" y1="20" x2="255" y2="380" stroke="#092F4F" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <line x1="40" y1="195" x2="460" y2="195" stroke="#092F4F" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <!-- Arrow tips -->
+            <polygon points="255,14 251,24 259,24" fill="#092F4F"/>
+            <polygon points="255,386 251,376 259,376" fill="#092F4F"/>
+            <polygon points="466,195 456,191 456,199" fill="#092F4F"/>
+            <polygon points="34,195 44,191 44,199" fill="#092F4F"/>
+            <!-- Axis labels -->
+            <text x="255" y="10" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" fill="#092F4F" font-weight="700">Challenge directly ↑</text>
+            <text x="255" y="397" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" fill="#092F4F" font-weight="700">↓ Don't challenge</text>
+            <text x="20" y="198" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" fill="#092F4F" font-weight="700" transform="rotate(-90,20,198)">← Don't care personally</text>
+            <text x="482" y="198" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" fill="#092F4F" font-weight="700" transform="rotate(-90,482,198)">Care personally →</text>
+          </svg>
+        </div>
+
+          <h4 style="margin-top:20px;">How to practice it day to day</h4>
+          <p>Radical Candour is not something you save for annual reviews. It's a habit built in small moments:</p>
+          <ul style="margin:8px 0 0 0;padding-left:18px;line-height:1.8;color:#3a3a3a;">
+            <li><strong>Praise immediately and specifically.</strong> Not "great work" — "you handled that difficult customer calmly and kept the meeting constructive."</li>
+            <li><strong>Address behaviour early and privately.</strong> Small issues don't fix themselves. Raising them calmly and early is kinder than letting them build.</li>
+            <li><strong>Ask for feedback first.</strong> "Is there anything I could do differently to support you better?" It builds trust and models the behaviour you want.</li>
+            <li><strong>Stay curious before judgemental.</strong> Most performance problems come from lack of clarity, not lack of effort.</li>
+            <li><strong>Focus on behaviour and impact, not personality.</strong> "You interrupted Sarah twice in that meeting, which made it harder for the team to hear her thinking" is coachable. "You're dismissive" is not.</li>
+          </ul>
+
+          <h4 style="margin-top:20px;">Why it matters</h4>
+          <p>When you practise Radical Candour consistently, team members trust you more, problems get solved faster, and people grow instead of staying stuck. The whole team gets more productive and less anxious.</p>
+
+          <h4 style="margin-top:20px;">One thing to remember</h4>
+          <p>Radical Candour is not the same as Radical Honesty. It is not permission to say whatever you think. Kim Scott's point is that you care personally enough to tell someone the truth in a way that helps them grow. That distinction matters.</p>
+        </div>
+
+
+
+        <div class="guide-section">
+          <h4>The four quadrants</h4>
+          <ul>
+            <li><strong>Radical Candour:</strong> You care about the person and you challenge them directly. This is where growth happens. It feels uncomfortable at first, but it builds real trust.</li>
+            <li><strong>Ruinous Empathy:</strong> You care, but you don't challenge. You soften feedback until it loses its meaning, or you say nothing at all. The person never grows, and you've done them a disservice.</li>
+            <li><strong>Obnoxious Aggression:</strong> You challenge directly, but you don't care personally. The feedback lands, but it damages the relationship. People become defensive rather than receptive.</li>
+            <li><strong>Manipulative Insincerity:</strong> You neither care nor challenge. Vague praise, avoided conversations, no real feedback at all. Everyone loses.</li>
+          </ul>
+        </div>
+
+        <div class="guide-section">
+          <h4>One thing to remember</h4>
+          <p>Most managers default to Ruinous Empathy. They care about the person, so they hold back. The kindest thing you can do is tell the truth — clearly, specifically, and with genuine care for the person you're speaking to.</p>
+        </div>
+        <div class="btn-row" style="margin-top:8px;">
+          <button class="btn-primary" onclick="document.getElementById('rc-tool-anchor').scrollIntoView({behavior:'smooth'})">Go to the feedback tool &darr;</button>
+        </div>
+      </div>
+
+      <div id="rc-tool-anchor" style="scroll-margin-top:80px;"></div>
+      <div class="card" id="rc-intro-card">
+        <h3>What's the feedback about?</h3>
+        <div class="info-box">Give a brief overview to get started. Don't worry about getting it perfect — the conversation will draw out the detail.</div>
+        <label for="rc-overview">Brief overview</label>
+        <textarea id="rc-overview" placeholder="e.g. A team member missed a deadline and didn't flag it in advance. I need to address it without damaging the relationship."></textarea>
+        <div style="margin:16px 0 8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:#092F4F;display:block;margin-bottom:10px;">How would you like to work through this?</label>
+          <div style="display:flex;gap:10px;">
+            <button id="rc-mode-fast" onclick="setRCMode('fast')" class="btn-secondary" style="flex:1;padding:12px 8px;font-size:0.85rem;border:2px solid #D2E6F3;border-radius:8px;cursor:pointer;transition:all 0.2s;">
+              <div style="font-weight:700;margin-bottom:4px;">⚡ Quick guidance</div>
+              <div style="font-size:0.78rem;color:#5a7a94;font-weight:400;">Two or three questions, then practical guidance fast.</div>
+            </button>
+            <button id="rc-mode-deep" onclick="setRCMode('deep')" class="btn-secondary" style="flex:1;padding:12px 8px;font-size:0.85rem;border:2px solid #0BBBEF;background:#e8f8fd;border-radius:8px;cursor:pointer;transition:all 0.2s;">
+              <div style="font-weight:700;margin-bottom:4px;">🔍 In-depth coaching</div>
+              <div style="font-size:0.78rem;color:#5a7a94;font-weight:400;">A fuller conversation to think it through properly.</div>
+            </button>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn-primary" onclick="startRC()">Start the conversation</button>
+        </div>
+      </div>
+
+      <div class="card" id="rc-chat-card" style="display:none;">
+        <h3>Coaching conversation</h3>
+        <div class="step-progress" id="rc-steps">
+          <div class="step-item active" id="rc-step-sit"><div class="step-circle">1</div><div class="step-label">Situation</div></div>
+          <div class="step-item" id="rc-step-beh"><div class="step-circle">2</div><div class="step-label">Behaviour</div></div>
+          <div class="step-item" id="rc-step-imp"><div class="step-circle">3</div><div class="step-label">Impact</div></div>
+          <div class="step-item" id="rc-step-scr"><div class="step-circle">4</div><div class="step-label">Guidance</div></div>
+        </div>
+        <div class="chat-window" id="rc-chat"></div>
+        <div class="loading-dots" id="rc-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>Thinking...</span></div>
+        <div class="chat-input-row" id="rc-input-row">
+          <textarea id="rc-user-input" placeholder="Your response..." rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendRC();}"></textarea>
+          <button class="btn-primary" onclick="sendRC()">Send</button>
+        </div>
+      </div>
+
+      <div class="output-block" id="rc-output">
+        <div class="output-label">Your feedback guidance</div>
+        <div id="rc-output-text"></div>
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="btn-cyan" onclick="copyRC()">Copy guidance</button>
+          <span class="copy-success" id="rc-copied">Copied!</span>
+          <button class="btn-secondary" onclick="resetRC()">Start again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OFF MY PLATE MANAGER -->
+    <div class="panel" id="panel-plate-manager">
+      <div class="panel-header">
+        <h2>Off My PLATE</h2>
+        <p>A structured framework for helping your team own their problems and decisions — rather than bringing them to you for answers.</p>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>What it's for</h4>
+          <p>Off My PLATE is a delegation and problem-solving framework. It stops you becoming the answer to every question. Instead of solving things for your team, you coach them to think it through, make a recommendation, and own the outcome.</p>
+          <p>The result: your team gets more capable, you get your time back, and decisions stick because the person who made them owns them.</p>
+        </div>
+
+        <div class="guide-section">
+          <h4>The PLATE framework</h4>
+
+          <div style="display:grid;gap:12px;margin-top:4px;">
+            <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--off-white);border-radius:8px;border:1px solid var(--border);">
+              <div style="width:36px;height:36px;background:var(--navy);color:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;flex-shrink:0;">P</div>
+              <div>
+                <div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:var(--navy);margin-bottom:3px;">Problem</div>
+                <div style="font-size:0.875rem;color:var(--text);line-height:1.6;">What exactly needs solving or deciding? Push for a clear, specific definition. Vague problems lead to vague solutions.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--off-white);border-radius:8px;border:1px solid var(--border);">
+              <div style="width:36px;height:36px;background:var(--navy);color:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;flex-shrink:0;">L</div>
+              <div>
+                <div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:var(--navy);margin-bottom:3px;">Locate the root cause</div>
+                <div style="font-size:0.875rem;color:var(--text);line-height:1.6;">What's actually driving this? Avoid symptom chasing. If they're solving the wrong thing, they'll be back with the same problem next week.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--off-white);border-radius:8px;border:1px solid var(--border);">
+              <div style="width:36px;height:36px;background:var(--navy);color:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;flex-shrink:0;">A</div>
+              <div>
+                <div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:var(--navy);margin-bottom:3px;">Alternatives</div>
+                <div style="font-size:0.875rem;color:var(--text);line-height:1.6;">Ask for at least three options — with the pros and cons of each. This is where you stop them coming to you with just one idea and expecting a yes.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--off-white);border-radius:8px;border:1px solid var(--border);">
+              <div style="width:36px;height:36px;background:var(--navy);color:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;flex-shrink:0;">T</div>
+              <div>
+                <div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:var(--navy);margin-bottom:3px;">Tell me your recommendation</div>
+                <div style="font-size:0.875rem;color:var(--text);line-height:1.6;">They must pick one and own it. Not "what do you think?" — they have to commit to a recommendation and explain why. This is the moment they step up.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--off-white);border-radius:8px;border:1px solid var(--border);">
+              <div style="width:36px;height:36px;background:var(--navy);color:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;flex-shrink:0;">E</div>
+              <div>
+                <div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;color:var(--navy);margin-bottom:3px;">Endpoint</div>
+                <div style="font-size:0.875rem;color:var(--text);line-height:1.6;">What does done look like? Agree the success criteria, the deadline, and when they'll update you. No ambiguity at the finish line.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-section" style="margin-top:24px;">
+          <h4>How to use it with your team</h4>
+          <p>When a team member comes to you with a problem, resist the urge to solve it. Instead, use PLATE as the structure for your conversation.</p>
+          <ul>
+            <li>Start with: "Walk me through the problem as you see it."</li>
+            <li>When they've described it: "What do you think is really driving this?"</li>
+            <li>Once you're clear on the root cause: "What are your options? Give me at least three."</li>
+            <li>After they've listed options: "Which one are you recommending, and why?"</li>
+            <li>To close: "What does success look like, and when will you update me?"</li>
+          </ul>
+          <p style="margin-top:10px;">You don't need to follow the script rigidly. The goal is that your team member leaves the conversation owning the problem and the solution — not you.</p>
+        </div>
+
+        <div class="guide-section" style="margin-top:24px;">
+          <h4>A note on timing</h4>
+          <p>PLATE works best when used consistently. The first few times, your team members may find it uncomfortable — they're used to you having the answers. Stick with it. Within a few weeks, they'll start arriving with a PLATE summary already prepared. That's when you know it's working.</p>
+        </div>
+
+        <div style="margin-top:8px;padding:18px 20px;background:linear-gradient(90deg,rgba(11,187,239,0.09),rgba(11,187,239,0.03));border:1px solid rgba(11,187,239,0.28);border-radius:10px;">
+          <div style="font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.95rem;color:var(--navy);margin-bottom:6px;">Get your team using the tool</div>
+          <p style="font-size:0.875rem;color:var(--mid-blue);line-height:1.6;margin-bottom:14px;">Your team members have their own version of Off My PLATE in the TimeBuilder Companion employee app. It coaches them through PLATE before they come to you — so the conversation is sharper from the start.</p>
+          <p style="font-size:0.875rem;color:var(--mid-blue);line-height:1.6;margin-bottom:14px;">The next time a team member brings you a problem, ask them to work through it in the tool first and come back with a PLATE summary. It takes ten minutes and transforms the quality of the conversation.</p>
+          <div style="font-size:0.8rem;color:var(--muted);font-family:'Exo 2',sans-serif;font-weight:600;">Share the employee app link with your team to get started.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OFF MY PLATE EMPLOYEE -->
+    <div class="panel" id="panel-plate-employee">
+      <div class="panel-header">
+        <h2>Off My PLATE</h2>
+        <p>Work through a problem or task using the PLATE framework, then share your plan with your manager.</p>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>What is PLATE?</h4>
+          <p>PLATE is a simple framework for thinking through a problem properly before you bring it to your manager. Instead of arriving with "I've got a problem", you arrive with a clear analysis and a recommendation. That's a completely different conversation.</p>
+          <p>Your manager will respect you more for it, and you'll feel more confident walking in.</p>
+        </div>
+        <div style="display:grid;gap:10px;margin:16px 0;">
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:var(--navy);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.95rem;flex-shrink:0;">P</div>
+            <div style="font-size:0.875rem;line-height:1.6;"><strong>Problem</strong> — define exactly what needs solving, clearly and specifically.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:var(--navy);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.95rem;flex-shrink:0;">L</div>
+            <div style="font-size:0.875rem;line-height:1.6;"><strong>Locate</strong> — find the real root cause, not just the symptom on the surface.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:var(--navy);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.95rem;flex-shrink:0;">A</div>
+            <div style="font-size:0.875rem;line-height:1.6;"><strong>Alternatives</strong> — think of at least three ways to handle it, with honest pros and cons.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:var(--navy);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.95rem;flex-shrink:0;">T</div>
+            <div style="font-size:0.875rem;line-height:1.6;"><strong>Tell</strong> — give your recommendation. Pick one option and own it. Don't sit on the fence.</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:var(--navy);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.95rem;flex-shrink:0;">E</div>
+            <div style="font-size:0.875rem;line-height:1.6;"><strong>Endpoint</strong> — define what done looks like and when you'll update your manager.</div>
+          </div>
+        </div>
+        <p style="font-size:0.875rem;color:var(--muted);line-height:1.6;">The tool below will coach you through each step. At the end, you'll get a summary you can copy and share with your manager before the conversation.</p>
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn-primary" onclick="document.getElementById('emp-plate-tool-anchor').scrollIntoView({behavior:'smooth'})">Start the PLATE tool &darr;</button>
+        </div>
+      </div>
+
+      <div id="emp-plate-tool-anchor" style="scroll-margin-top:80px;"></div>
+      <div class="card" id="emp-plate-intro-card">
+        <h3>What's the problem or task?</h3>
+        <div class="info-box">Give a brief overview to get started. The conversation will draw out the detail.</div>
+        <label for="emp-plate-overview">Briefly describe the problem or task</label>
+        <textarea id="emp-plate-overview" placeholder="e.g. I've been asked to take on client quotations but I'm not sure of the process or how much autonomy I have."></textarea>
+        <div style="margin:16px 0 8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:#092F4F;display:block;margin-bottom:10px;">How would you like to work through this?</label>
+          <div style="display:flex;gap:10px;">
+            <button id="plate-mode-fast" onclick="setPlateEmpMode('fast')" class="btn-secondary" style="flex:1;padding:12px 8px;font-size:0.85rem;border:2px solid #0BBBEF;background:#e8f8fd;border-radius:8px;cursor:pointer;transition:all 0.2s;">
+              <div style="font-weight:700;margin-bottom:4px;">⚡ High level</div>
+              <div style="font-size:0.78rem;color:#5a7a94;font-weight:400;">Three quick questions, then a clear summary to take to your manager.</div>
+            </button>
+            <button id="plate-mode-deep" onclick="setPlateEmpMode('deep')" class="btn-secondary" style="flex:1;padding:12px 8px;font-size:0.85rem;border:2px solid #D2E6F3;border-radius:8px;cursor:pointer;transition:all 0.2s;">
+              <div style="font-weight:700;margin-bottom:4px;">🔍 Deep dive</div>
+              <div style="font-size:0.78rem;color:#5a7a94;font-weight:400;">A fuller conversation to think the problem through properly.</div>
+            </button>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn-primary" onclick="startEmpPLATE()">Start the conversation</button>
+        </div>
+      </div>
+
+      <div class="card" id="emp-plate-chat-card" style="display:none;">
+        <h3>PLATE conversation</h3>
+        <div class="step-progress" id="emp-plate-steps">
+          <div class="step-item active" id="emp-plate-step-1"><div class="step-circle">P</div><div class="step-label">Problem</div></div>
+          <div class="step-item" id="emp-plate-step-2"><div class="step-circle">L</div><div class="step-label">Locate</div></div>
+          <div class="step-item" id="emp-plate-step-3"><div class="step-circle">A</div><div class="step-label">Alternatives</div></div>
+          <div class="step-item" id="emp-plate-step-4"><div class="step-circle">T</div><div class="step-label">Tell</div></div>
+          <div class="step-item" id="emp-plate-step-5"><div class="step-circle">E</div><div class="step-label">Endpoint</div></div>
+        </div>
+        <div class="chat-window" id="emp-plate-chat"></div>
+        <div class="loading-dots" id="emp-plate-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>Thinking...</span></div>
+        <div class="chat-input-row" id="emp-plate-input-row">
+          <textarea id="emp-plate-user-input" placeholder="Your response..." rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendEmpPLATE();}"></textarea>
+          <button class="btn-primary" onclick="sendEmpPLATE()">Send</button>
+        </div>
+      </div>
+
+      <div class="output-block" id="emp-plate-output">
+        <div class="output-label">Your PLATE summary</div>
+        <div id="emp-plate-output-text"></div>
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="btn-cyan" onclick="copyEmpPLATE()">Copy and share with manager</button>
+          <span class="copy-success" id="emp-plate-copied">Copied!</span>
+          <button class="btn-secondary" onclick="resetEmpPLATE()">Start again</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- VOICE TOOLS -->
+        <div class="panel" id="panel-voice">
+      <div class="panel-header">
+        <h2>Voice Tools</h2>
+        <p>Speaking is three to four times faster than typing. These tools work across your whole computer, so you can dictate into any text field, not just this app. Prefer typing? That works just as well.</p>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>About the built-in mic button</h4>
+          <p>The microphone buttons inside this app use your browser's built-in speech recognition. They're free and need no setup, but accuracy varies by browser and microphone. Chrome and Edge work best. For consistent, higher-quality dictation across your whole computer, one of the tools below is worth a look.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>Voicy <span style="background:#0BBBEF;color:#fff;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;">Recommended</span></h4>
+          <p style="margin-bottom:10px;">Ben's top pick. Voicy works across your whole system: hold a hotkey, speak, done. In practice it's faster and more accurate than the more heavily marketed alternatives, and it's the tool Ben uses day to day. If you want one tool to try first, start here.</p>
+          <ul style="margin-bottom:10px;">
+            <li><strong>Platform:</strong> Mac, Windows and Chrome</li>
+            <li><strong>Price:</strong> $8.49 per month or $82 per year</li>
+            <li><strong>Free trial:</strong> 40-minute trial (no time limit, just 40 minutes of dictation)</li>
+          </ul>
+          <a href="https://voicy.app" target="_blank" class="btn-primary" style="display:inline-block;text-decoration:none;padding:9px 18px;border-radius:8px;font-size:0.875rem;font-weight:600;">Go to Voicy &rarr;</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>Typeless</h4>
+          <p style="margin-bottom:10px;">Typeless takes a different approach. Rather than just transcribing what you say, it lets you define your personal writing style: your tone of voice, your preferred phrasing, how formal or casual you like to sound. When you dictate, it rewrites your words in your style. The result feels more like something you actually wrote, rather than raw speech converted to text.</p>
+          <p style="margin-bottom:10px;">If you write a lot of emails, proposals, or client communications and want the output to sound like you without editing, Typeless is worth exploring. It's still early days for this kind of tool, so it's worth trying to see if it fits your workflow.</p>
+          <ul style="margin-bottom:10px;">
+            <li><strong>Platform:</strong> Mac and Windows</li>
+            <li><strong>Best for:</strong> People who want polished output that sounds like them, not just a transcript</li>
+          </ul>
+          <a href="https://typeless.app" target="_blank" class="btn-secondary" style="display:inline-block;text-decoration:none;padding:9px 18px;border-radius:8px;font-size:0.875rem;font-weight:600;">Go to Typeless &rarr;</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>Wispr Flow</h4>
+          <p style="margin-bottom:10px;">The most heavily marketed voice dictation tool right now. Wispr Flow works across any app on your computer and has solid accuracy. It also includes AI features so you can give spoken instructions like "make this shorter" or "turn this into bullet points." It's a polished product with a strong design, though you may find the experience is not necessarily better than Voicy in day-to-day use despite the bigger profile.</p>
+          <ul style="margin-bottom:10px;">
+            <li><strong>Platform:</strong> Mac and Windows</li>
+            <li><strong>Price:</strong> $15 per month or $144 per year</li>
+            <li><strong>Free trial:</strong> Yes, no credit card required</li>
+          </ul>
+          <a href="https://wisprflow.ai" target="_blank" class="btn-secondary" style="display:inline-block;text-decoration:none;padding:9px 18px;border-radius:8px;font-size:0.875rem;font-weight:600;">Go to Wispr Flow &rarr;</a>
+        </div>
+      </div>
+
+      <div class="card" style="border-left:3px solid #78C9F1;background:#F4F8FC;">
+        <div class="guide-section">
+          <h4 style="color:#092F4F;">Privacy note</h4>
+          <p style="margin-bottom:0;">Each of these tools processes your audio on their own servers. Before committing to any tool, take a moment to review its privacy policy: what is recorded, how long it is stored, and whether it is used to train AI models. This is especially relevant if you dictate anything client-confidential or commercially sensitive.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOL GUIDE -->
+    <div class="panel" id="panel-guide">
+      <div class="panel-header">
+        <h2>Tool Guide</h2>
+        <p>A quick reference to everything in this app. If you are not sure where to start, this is the place.</p>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>Morning Check-In</h4>
+          <p>Start your day with a short planning moment. You set your top three priorities, note anything that might pull you off track, and optionally add a few smaller tasks to clear. When you save, the AI reflects your plan back to you with a short coaching note to help you stay focused. Your priorities are carried through to the End of Day review so you can see how the day actually played out.</p>
+          <p style="margin-top:8px;color:#5a7a94;font-size:0.875rem;"><strong>When to use it:</strong> First thing in the morning, before you open your inbox.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>End of Day Review</h4>
+          <p>A five-minute reflection on how the day went. You note what moved forward, what did not get done and why, and one thing you would do differently. The AI brings in your morning priorities and gives you an honest, constructive summary. Doing this consistently is one of the most effective habits for improving how you use your time over weeks and months.</p>
+          <p style="margin-top:8px;color:#5a7a94;font-size:0.875rem;"><strong>When to use it:</strong> At the end of your working day, before you switch off.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>One-to-One Guide</h4>
+          <p>A structured reference for making the most of your one-to-one meetings. The manager view gives you a framework for preparing, running and following up on 1:1s with each team member. The employee view helps you prepare for your own 1:1s: what to bring, how to get the most from the conversation, and how to raise things that matter. This is a guide, not a chat tool: it gives you a structure to follow, not an AI conversation.</p>
+          <p style="margin-top:8px;color:#5a7a94;font-size:0.875rem;"><strong>When to use it:</strong> Before a one-to-one meeting to prepare, or after to review.</p>
+        </div>
+      </div>
+
+      <div class="card" id="guide-rc-card">
+        <div class="guide-section">
+          <h4>Radical Candour <span style="font-size:0.8rem;color:#5a7a94;font-weight:400;">(managers only)</span></h4>
+          <p>A coaching tool for preparing a piece of feedback before you deliver it. Based on Kim Scott's Radical Candour framework, the idea is that the best feedback combines genuine care for the person with directness about what needs to change. The tool walks you through a conversation: what the situation is, what the specific behaviour was, what the impact has been, and how you want to frame the conversation. At the end it produces a script you can use or adapt.</p>
+          <p style="margin-top:8px;color:#5a7a94;font-size:0.875rem;"><strong>When to use it:</strong> When you need to give feedback that is honest, specific and constructive, and you want to think it through first.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>Off My PLATE</h4>
+          <p>A delegation coaching tool built around the PLATE framework: Prepare, Lead in, Assign, Transfer, Evaluate. The manager version is a role-play conversation where the AI plays the team member and coaches you through how to hand something over properly, not just pass it on. The employee version helps you think through what you are carrying, what you could delegate or push back on, and produces a summary you can share with your manager.</p>
+          <p style="margin-top:8px;color:#5a7a94;font-size:0.875rem;"><strong>When to use it:</strong> When your plate is too full, or when you want to get better at handing things over with clarity and confidence.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="guide-section">
+          <h4>Voice Tools</h4>
+          <p>A reference tab covering three tools that let you dictate instead of type, across your whole computer. Speaking is significantly faster than typing, and for reflective tools like this one it often produces better, more natural answers. The tab covers Voicy (the recommended pick), Typeless (for polished, styled output), and Wispr Flow. The mic buttons inside this app use your browser's built-in recognition, which is free but less reliable: the Voice Tools tab explains the alternatives.</p>
+          <p style="margin-top:8px;color:#5a7a94;font-size:0.875rem;"><strong>When to use it:</strong> If you want to speed up how you interact with this tool, or with your computer generally.</p>
+        </div>
+      </div>
+
+      <div class="card" style="background:#F4F8FC;border-left:3px solid #0BBBEF;">
+        <div class="guide-section">
+          <h4>A note on how the AI works</h4>
+          <p>Each tool sends your input to Claude, Anthropic's AI, which generates a response tailored to what you have written. The AI is configured to be a practical, direct coaching partner: it will not flatter you or give vague advice. It aims to help you think more clearly, act more decisively, and get better value from your time.</p>
+          <p style="margin-top:8px;">Your conversations are not used to train AI models. Inputs and outputs are deleted after 7 days. Nothing is stored on our servers: everything runs through a secure API connection.</p>
+        </div>
+      </div>
+    </div>
+
+
+<script>
+// ─── CONFIG ───────────────────────────────
+const CONFIG = {
+  workerUrl: 'https://tve-rocks-worker.ben-e48.workers.dev/',
+  model: 'claude-sonnet-4-20250514',
+  passwords: { manager: 'timebuilder2025', employee: 'employee2025' }
+};
+
+const TONE = `You are a coaching tool built by The Value Engine. Speak in Ben Rotheray's coaching voice: warm, direct, commercially grounded. Short sentences. No jargon. No corporate phrases. Get to the point. Sound like a trusted advisor who genuinely knows the person's world. Use British English throughout — spellings like "behaviour", "recognise", "practise", "candour". Never say things like "Great answer!" or "Absolutely!" — just move the conversation forward naturally.`;
+
+// ─── TABS ────────────────────────────────
+const MANAGER_TABS = [
+  { id: 'morning',          label: 'Morning Check-In',    panel: 'panel-morning' },
+  { id: 'eod',              label: 'End of Day',          panel: 'panel-eod' },
+  { id: 'onetone',          label: 'One-to-One Guide',    panel: 'panel-onetone-manager' },
+  { id: 'rc',               label: 'Radical Candour',     panel: 'panel-rc' },
+  { id: 'plate',            label: 'Off My PLATE',        panel: 'panel-plate-manager' },
+  { id: 'voice',            label: 'Voice Tools',         panel: 'panel-voice' },
+  { id: 'guide',            label: 'Tool Guide',          panel: 'panel-guide' },
+];
+const EMPLOYEE_TABS = [
+  { id: 'onetone',          label: 'One-to-One Guide',    panel: 'panel-onetone-employee' },
+  { id: 'plate',            label: 'Off My PLATE',        panel: 'panel-plate-employee' },
+  { id: 'voice',            label: 'Voice Tools',         panel: 'panel-voice' },
+  { id: 'guide',            label: 'Tool Guide',          panel: 'panel-guide' },
+];
+
+let currentRole = null;
+let currentTabs = [];
+let selectedRole = null;
+
+// ─── LOGIN ────────────────────────────────
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('btn-role-manager').classList.toggle('selected', role === 'manager');
+  document.getElementById('btn-role-employee').classList.toggle('selected', role === 'employee');
+  document.getElementById('pw-section').classList.add('visible');
+  setTimeout(() => document.getElementById('login-password').focus(), 50);
+}
+
+function doLogin() {
+  if (!selectedRole) { alert('Please choose Manager or Employee first.'); return; }
+  const pw = document.getElementById('login-password').value.trim();
+  const correct = CONFIG.passwords[selectedRole];
+  if (pw === correct) {
+    launchApp(selectedRole);
+  } else {
+    const err = document.getElementById('login-error');
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 3000);
+  }
+}
+
+function launchApp(role) {
+  currentRole = role;
+  localStorage.setItem('tb_role', role);
+  currentTabs = role === 'manager' ? MANAGER_TABS : EMPLOYEE_TABS;
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-app').style.display   = 'flex';
+  document.getElementById('role-badge').textContent = role === 'manager' ? 'Manager' : 'Employee';
+  // Show or hide the RC card in the Tool Guide based on role
+  const rcGuideCard = document.getElementById('guide-rc-card');
+  if (rcGuideCard) rcGuideCard.style.display = role === 'manager' ? '' : 'none';
+  buildTabs();
+  showTab(currentTabs[0].id);
+  setTimeout(() => { injectVoiceButtons(); showWelcome(role); }, 100);
+}
+
+function doLogout() {
+  currentRole = null; selectedRole = null;
+  localStorage.removeItem('tb_role');
+  document.getElementById('screen-app').style.display   = 'none';
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+  document.getElementById('pw-section').classList.remove('visible');
+  document.getElementById('btn-role-manager').classList.remove('selected');
+  document.getElementById('btn-role-employee').classList.remove('selected');
+}
+
+// ─── TABS ─────────────────────────────────
+function buildTabs() {
+  const nav = document.getElementById('tab-nav');
+  nav.innerHTML = '';
+  currentTabs.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'tab-btn';
+    b.id = 'tab-btn-' + t.id;
+    b.textContent = t.label;
+    b.onclick = () => showTab(t.id);
+    nav.appendChild(b);
+  });
+}
+
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const tab = currentTabs.find(t => t.id === id);
+  if (!tab) return;
+  document.getElementById(tab.panel)?.classList.add('active');
+  document.getElementById('tab-btn-' + id)?.classList.add('active');
+  if (id === 'eod') loadMorningBanner();
+}
+
+// ─── API ──────────────────────────────────
+async function callAPI(system, messages) {
+  const payload = {
+    model: CONFIG.model,
+    max_tokens: 1024,
+    system: system,
+    messages: messages
+  };
+  let res;
+  try {
+    res = await fetch(CONFIG.workerUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(networkErr) {
+    throw new Error('Network error: ' + networkErr.message);
+  }
+  if (!res.ok) {
+    let errBody = '';
+    try { errBody = await res.text(); } catch(_) {}
+    throw new Error('API error ' + res.status + ': ' + errBody);
+  }
+  const d = await res.json();
+  if (d.error) throw new Error('API returned error: ' + JSON.stringify(d.error));
+  if (!d.content || !d.content[0]) throw new Error('Unexpected response shape: ' + JSON.stringify(d));
+  return d.content[0].text;
+}
+
+function setLoading(id, on) {
+  document.getElementById(id)?.classList.toggle('visible', on);
+}
+
+// ─── CHAT HELPERS ─────────────────────────
+function addMsg(windowId, type, text) {
+  const w = document.getElementById(windowId);
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap' + (type === 'user' ? ' user-wrap' : '');
+  const lbl = document.createElement('div');
+  lbl.className = 'msg-label';
+  lbl.textContent = type === 'user' ? 'You' : 'Coach';
+  const msg = document.createElement('div');
+  msg.className = 'msg msg-' + (type === 'user' ? 'user' : 'coach');
+  msg.textContent = text;
+  wrap.appendChild(lbl);
+  wrap.appendChild(msg);
+  w.appendChild(wrap);
+  w.scrollTop = w.scrollHeight;
+}
+
+function showOutput(id, text) {
+  const el = document.getElementById(id);
+  el.classList.add('visible');
+  document.getElementById(id + '-text').textContent = text;
+}
+
+function copyText(textId, successId) {
+  const text = document.getElementById(textId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const s = document.getElementById(successId);
+    s.classList.add('visible');
+    setTimeout(() => s.classList.remove('visible'), 2500);
+  });
+}
+
+// ─── OPTIONAL TOGGLE ──────────────────────
+function toggleOptional(prefix) {
+  const toggle = document.getElementById(prefix + '-opt-toggle');
+  const fields = document.getElementById(prefix + '-opt-fields');
+  toggle.classList.toggle('open');
+  fields.classList.toggle('open');
+}
+
+// ─── MORNING CHECK-IN ─────────────────────
+let morningPriorities = null;
+let morningChatHistory = [];
+
+function saveMorning() {
+  const p1 = document.getElementById('morning-p1').value.trim();
+  const p2 = document.getElementById('morning-p2').value.trim();
+  const p3 = document.getElementById('morning-p3').value.trim();
+  if (!p1) { alert('Add at least one priority to save.'); return; }
+  morningPriorities = [p1, p2, p3].filter(Boolean);
+  document.getElementById('morning-saved-banner').style.display = 'block';
+}
+
+async function startMorningNudge() {
+  const p1 = document.getElementById('morning-p1').value.trim();
+  const p2 = document.getElementById('morning-p2').value.trim();
+  const p3 = document.getElementById('morning-p3').value.trim();
+  const tasks = document.getElementById('morning-tasks').value.trim();
+  const stress = document.getElementById('morning-stress').value.trim();
+  const action = document.getElementById('morning-action').value.trim();
+
+  if (!p1) { alert('Add at least one priority first.'); return; }
+  morningPriorities = [p1, p2, p3].filter(Boolean);
+
+  document.getElementById('morning-form-card').style.display = 'none';
+  document.getElementById('morning-chat-card').style.display = 'block';
+  morningChatHistory = [];
+
+  const context = `Priorities: ${morningPriorities.join(', ')}${tasks ? '. Small tasks: ' + tasks : ''}${stress ? '. Potential stressors: ' + stress : ''}${action ? '. One key action: ' + action : ''}`;
+
+  const openingPrompt = `The manager has just done their morning check-in. Here's what they shared: ${context}. Give them a short, direct coaching nudge — two or three sentences maximum. Then ask one focused question to help them think about how they'll approach the day. Don't list their priorities back at them.`;
+
+  setLoading('morning-loading', true);
+  try {
+    morningChatHistory.push({ role: 'user', content: openingPrompt });
+    const reply = await callAPI(TONE, morningChatHistory);
+    morningChatHistory.push({ role: 'assistant', content: reply });
+    addMsg('morning-chat', 'coach', reply);
+  } catch(e) {
+    addMsg('morning-chat', 'coach', 'Error: ' + e.message);
+  } finally {
+    setLoading('morning-loading', false);
+  }
+}
+
+async function sendMorningChat() {
+  const input = document.getElementById('morning-user-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMsg('morning-chat', 'user', text);
+  morningChatHistory.push({ role: 'user', content: text });
+  setLoading('morning-loading', true);
+  try {
+    const reply = await callAPI(TONE + ' Keep the conversation going naturally. Ask one question at a time. When the person seems ready to get on with their day, wrap up warmly and wish them well.', morningChatHistory);
+    morningChatHistory.push({ role: 'assistant', content: reply });
+    addMsg('morning-chat', 'coach', reply);
+  } catch(e) {
+    addMsg('morning-chat', 'coach', 'Error: ' + e.message);
+  } finally {
+    setLoading('morning-loading', false);
+  }
+}
+
+function closeMorningChat() {
+  document.getElementById('morning-chat-card').style.display = 'none';
+  document.getElementById('morning-form-card').style.display = 'block';
+  document.getElementById('morning-saved-banner').style.display = 'block';
+}
+
+// ─── END OF DAY ──────────────────────────
+function loadMorningBanner() {
+  const banner = document.getElementById('eod-morning-banner');
+  if (morningPriorities && morningPriorities.length) {
+    banner.style.display = 'block';
+    banner.textContent = 'This morning you planned to: ' + morningPriorities.join(', ') + '.';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+async function submitEOD() {
+  const wins      = document.getElementById('eod-wins').value.trim();
+  const missed    = document.getElementById('eod-incomplete').value.trim();
+  const different = document.getElementById('eod-different').value.trim();
+  const tomorrow  = document.getElementById('eod-tomorrow').value.trim();
+  if (!wins && !missed) { alert('Fill in at least one section before generating your reflection.'); return; }
+
+  const btn = document.querySelector('#panel-eod .btn-primary');
+  btn.disabled = true;
+  setLoading('eod-loading', true);
+
+  try {
+    const morningCtx = morningPriorities ? 'Morning priorities: ' + morningPriorities.join(', ') + '.\n\n' : '';
+    const system = TONE + ' You are helping someone close out their day. Be specific to what they\'ve shared. Three to four short paragraphs. No bullet lists. End with one clear sentence about tomorrow.';
+    const user = `${morningCtx}What went well: ${wins || 'not provided'}.\nWhat didn't get done: ${missed || 'not provided'}.\nOne thing I'd do differently: ${different || 'not provided'}.\nTop priority tomorrow: ${tomorrow || 'not provided'}.\n\nGive me an honest end of day reflection.`;
+    const result = await callAPI(system, [{ role: 'user', content: user }]);
+    showOutput('eod-response', result);
+  } catch(e) {
+    showOutput('eod-response', 'Error: ' + e.message);
+  } finally {
+    setLoading('eod-loading', false);
+    btn.disabled = false;
+  }
+}
+
+function resetEOD() {
+  ['eod-wins','eod-incomplete','eod-different'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('eod-tomorrow').value = '';
+  document.getElementById('eod-response').classList.remove('visible');
+}
+
+// ─── RADICAL CANDOUR ─────────────────────
+let rcHistory = [];
+let rcPhase = 'situation';
+const RC_PHASES = ['situation','behaviour','impact','guidance'];
+
+const RC_SYSTEM_DEEP = TONE + ` You are a coaching partner helping a manager prepare a feedback conversation using the Radical Candour framework. Your role is to be a thinking partner, a reflection tool, and a conversation coach — not a script generator or disciplinary assistant.
+
+Core philosophy: Most people want to do good work. Poor performance is usually caused by lack of clarity, missing expectations, capability gaps, competing priorities, or personal pressure. Help the manager stay curious before judgemental. They should leave feeling "I know how to handle this constructively" — not "I've got ammunition."
+
+Move through five coaching stages:
+
+1. SLOW THE REACTION: Help the manager move from emotion to observation. Ask what specifically happened, not how they felt about it. "What did you observe rather than interpret?"
+
+2. ADD CONTEXT AND HUMANITY: Encourage empathy without excusing the behaviour. What else might be going on for this person? Is this a pattern or a one-off? Have expectations been clear?
+
+3. TRANSLATE INTO BEHAVIOURS: Actively reframe emotional language into observable facts. If they say "they were lazy", ask "what specifically didn't happen?" Feedback must become: specific behaviour → impact → coaching conversation.
+
+4. COACH THE CONVERSATION: Help them prepare a discussion using this structure: acknowledge intent (start with care), describe behaviour (stay specific), explain impact (keep factual), invite perspective (stay humble), problem-solve together.
+
+5. FINISH WITH TRUST: Help them end the conversation positively. Challenge the behaviour without damaging the relationship.
+
+Language to use: "Can we separate what happened from how it felt?" / "What behaviour are you wanting to address?" / "Is this a one-off or a pattern?" / "How could you raise this in a way that helps them improve?"
+
+Language to NEVER use: "You're right to be angry." / "That's unacceptable." / "You need to be firmer." / "They clearly don't care."
+
+Before generating guidance, quietly apply the CARE test: Clear (is it specific?), Actionable (can they improve it?), Respectful (does it preserve dignity?), Empathetic (have we considered context?). If not, keep refining.
+
+Remember: this is Radical Candour, not Radical Honesty. The point is not permission to say what you think. It is caring personally enough to tell someone the truth in a way that helps them grow.
+
+One question at a time. Keep it conversational. British English throughout.
+
+When ready for guidance, write exactly "GENERATE_SCRIPT" on its own line, then the guidance immediately after. End the guidance with a personalisation reminder: a short note reminding the manager to adapt their tone and language to the specific person — different people need different approaches.`;
+
+const RC_SYSTEM_FAST = TONE + ` You are a coaching partner helping a manager prepare a feedback conversation using the Radical Candour framework. The manager wants quick, practical guidance.
+
+Ask just two focused questions before generating guidance: (1) what specifically happened and what behaviour concerned them, (2) what impact it had on the team or work. Then generate guidance immediately.
+
+Core rules:
+- Stay curious, not judgemental. Most performance issues come from lack of clarity, not lack of care.
+- Reframe emotional language into observable behaviour. "They were lazy" becomes "what specifically didn't happen?"
+- Guidance must be warm, direct, and sound like something a real manager would actually say.
+- This is Radical Candour, not Radical Honesty — care personally while challenging directly.
+- Apply the CARE test silently: Clear, Actionable, Respectful, Empathetic.
+
+British English throughout. One question at a time.
+
+When ready for guidance, write exactly "GENERATE_SCRIPT" on its own line, then the guidance immediately after. End with a short personalisation note reminding the manager to adapt their tone to the specific person they are talking to.`;
+
+let RC_SYSTEM = RC_SYSTEM_DEEP;
+
+let rcMode = 'deep';
+function setRCMode(mode) {
+  rcMode = mode;
+  RC_SYSTEM = mode === 'fast' ? RC_SYSTEM_FAST : RC_SYSTEM_DEEP;
+  const fastBtn = document.getElementById('rc-mode-fast');
+  const deepBtn = document.getElementById('rc-mode-deep');
+  if (fastBtn && deepBtn) {
+    fastBtn.style.border = mode === 'fast' ? '2px solid #0BBBEF' : '2px solid #D2E6F3';
+    fastBtn.style.background = mode === 'fast' ? '#e8f8fd' : '';
+    deepBtn.style.border = mode === 'deep' ? '2px solid #0BBBEF' : '2px solid #D2E6F3';
+    deepBtn.style.background = mode === 'deep' ? '#e8f8fd' : '';
+  }
+}
+
+let plateEmpMode = 'fast';
+function setPlateEmpMode(mode) {
+  plateEmpMode = mode;
+  EMP_PLATE_SYSTEM = mode === 'fast' ? EMP_PLATE_SYSTEM_FAST : EMP_PLATE_SYSTEM_DEEP;
+  const fastBtn = document.getElementById('plate-mode-fast');
+  const deepBtn = document.getElementById('plate-mode-deep');
+  if (fastBtn && deepBtn) {
+    fastBtn.style.border = mode === 'fast' ? '2px solid #0BBBEF' : '2px solid #D2E6F3';
+    fastBtn.style.background = mode === 'fast' ? '#e8f8fd' : '';
+    deepBtn.style.border = mode === 'deep' ? '2px solid #0BBBEF' : '2px solid #D2E6F3';
+    deepBtn.style.background = mode === 'deep' ? '#e8f8fd' : '';
+  }
+}
+
+async function startRC() {
+  const overview = document.getElementById('rc-overview').value.trim();
+  if (!overview) { alert('Give a brief overview to get started.'); return; }
+
+  document.getElementById('rc-intro-card').style.display = 'none';
+  document.getElementById('rc-chat-card').style.display = 'block';
+  rcHistory = [];
+  rcPhase = 'situation';
+
+  const opener = `The manager wants to prepare feedback. Here's their overview: ${overview}. Start by exploring the Situation — ask a focused question to help them describe exactly what happened and when. One question only.`;
+  rcHistory.push({ role: 'user', content: opener });
+  setLoading('rc-loading', true);
+  try {
+    const reply = await callAPI(RC_SYSTEM, rcHistory);
+    rcHistory.push({ role: 'assistant', content: reply });
+    handleRCReply(reply);
+  } catch(e) {
+    addMsg('rc-chat', 'coach', 'Error: ' + e.message);
+  } finally {
+    setLoading('rc-loading', false);
+  }
+}
+
+async function sendRC() {
+  const input = document.getElementById('rc-user-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMsg('rc-chat', 'user', text);
+  rcHistory.push({ role: 'user', content: text });
+  setLoading('rc-loading', true);
+  try {
+    const reply = await callAPI(RC_SYSTEM, rcHistory);
+    rcHistory.push({ role: 'assistant', content: reply });
+    handleRCReply(reply);
+  } catch(e) {
+    addMsg('rc-chat', 'coach', 'Error: ' + e.message);
+  } finally {
+    setLoading('rc-loading', false);
+  }
+}
+
+function handleRCReply(reply) {
+  if (reply.includes('GENERATE_SCRIPT')) {
+    const parts = reply.split('GENERATE_SCRIPT');
+    const guidance = parts[parts.length - 1].trim();
+    if (parts[0].trim()) addMsg('rc-chat', 'coach', parts[0].trim());
+    document.getElementById('rc-input-row').style.display = 'none';
+    updateRCStep('guidance');
+    showOutput('rc-output', guidance);
+  } else {
+    addMsg('rc-chat', 'coach', reply);
+    // Advance step indicator based on keywords
+    if (reply.toLowerCase().includes('behaviour') || reply.toLowerCase().includes('behavior')) updateRCStep('behaviour');
+    else if (reply.toLowerCase().includes('impact')) updateRCStep('impact');
+  }
+}
+
+function updateRCStep(phase) {
+  rcPhase = phase;
+  const map = { situation: 'sit', behaviour: 'beh', impact: 'imp', script: 'scr' };
+  const order = ['sit','beh','imp','scr'];
+  const current = map[phase];
+  const currentIdx = order.indexOf(current);
+  order.forEach((s, i) => {
+    const el = document.getElementById('rc-step-' + s);
+    el.classList.remove('active','done');
+    if (i < currentIdx) el.classList.add('done');
+    if (i === currentIdx) el.classList.add('active');
+  });
+}
+
+function copyRC() { copyText('rc-output-text', 'rc-copied'); }
+
+function resetRC() {
+  rcHistory = []; rcPhase = 'situation';
+  document.getElementById('rc-overview').value = '';
+  document.getElementById('rc-chat').innerHTML = '';
+  document.getElementById('rc-intro-card').style.display = 'block';
+  document.getElementById('rc-chat-card').style.display = 'none';
+  document.getElementById('rc-output').classList.remove('visible');
+  document.getElementById('rc-input-row').style.display = 'flex';
+  updateRCStep('situation');
+}
+
+// ─── OFF MY PLATE EMPLOYEE ───────────────
+let empPlateHistory = [];
+
+const EMP_ONETONE_SYSTEM_QUICK = TONE + ` You are a friendly coaching assistant helping an employee prepare for their one-to-one meeting with their manager.
+
+Keep it simple and warm. Ask just three focused questions, one at a time:
+1. What wins or progress do they want to share? (What's gone well that their manager should know about?)
+2. What challenges or things are on their mind that they want to raise? (What's feeling difficult, stuck, or unclear?)
+3. Is there anything they want from their manager specifically? (Support, a decision, feedback, clarity, development.)
+
+After their third answer, generate a clean, simple agenda immediately.
+
+Tone: warm, encouraging, practical. These may be junior team members: keep language simple and avoid corporate jargon. Remind them this is their time and there are no wrong answers.
+
+When ready, write exactly "GENERATE_AGENDA" on its own line, then the agenda. Format it clearly with simple headings. Keep it concise: two or three lines per section maximum. End with a short tip reminding them to bring specific examples to the meeting.`;
+
+const EMP_ONETONE_SYSTEM_DEEP = TONE + ` You are a friendly coaching assistant helping an employee prepare thoroughly for their one-to-one meeting with their manager.
+
+Work through five areas, one at a time, with a question for each:
+1. Wins and progress: What's gone well? Where have they made progress their manager might not have seen? Any moments of feeling energised or "in flow"?
+2. Challenges and frictions: What's felt hard, unclear, or stuck? Where do they need more support, clarity, or resource? Any feedback they'd like to ask for?
+3. Growth and development: What skills would they like to strengthen? Any habits they want to build? Responsibilities they'd like to take on?
+4. Team and collaboration: Anything about how the team is working worth raising? Any cross-team friction or great teamwork to highlight?
+5. Feedback for their manager: What's working well about how they're supported? What would help more?
+
+Tone: warm, encouraging, practical. Keep language simple. Remind them this is their time and there are no wrong answers.
+
+After covering all five areas, write exactly "GENERATE_AGENDA" on its own line, then a clear agenda they can share with their manager. Use the five areas as headings. End with a short tip about bringing specific examples.`;
+
+let EMP_ONETONE_SYSTEM = EMP_ONETONE_SYSTEM_QUICK;
+let empOneToOneHistory = [];
+let empOneToOneMode = 'quick';
+
+function setOneToOneMode(mode) {
+  empOneToOneMode = mode;
+  EMP_ONETONE_SYSTEM = mode === 'quick' ? EMP_ONETONE_SYSTEM_QUICK : EMP_ONETONE_SYSTEM_DEEP;
+  const quickBtn = document.getElementById('onetone-mode-quick');
+  const deepBtn  = document.getElementById('onetone-mode-deep');
+  if (quickBtn && deepBtn) {
+    quickBtn.style.border      = mode === 'quick' ? '2px solid #0BBBEF' : '2px solid #D2E6F3';
+    quickBtn.style.background  = mode === 'quick' ? '#e8f8fd' : '';
+    deepBtn.style.border       = mode === 'deep'  ? '2px solid #0BBBEF' : '2px solid #D2E6F3';
+    deepBtn.style.background   = mode === 'deep'  ? '#e8f8fd' : '';
+  }
+}
+
+async function startEmpOneToOne() {
+  const overview = document.getElementById('emp-onetone-overview').value.trim();
+  if (!overview) { alert('Give a brief overview to get started.'); return; }
+  document.getElementById('emp-onetone-intro-card').style.display = 'none';
+  document.getElementById('emp-onetone-chat-card').style.display  = 'block';
+  empOneToOneHistory = [];
+  const opener = `The employee wants to prepare for their upcoming 1:1 meeting. Here's their overview: ${overview}. Start with a warm, encouraging opening, then ask your first question about wins and progress. One question only.`;
+  empOneToOneHistory.push({ role: 'user', content: opener });
+  setLoading('emp-onetone-loading', true);
+  try {
+    const reply = await callAPI(EMP_ONETONE_SYSTEM, empOneToOneHistory);
+    empOneToOneHistory.push({ role: 'assistant', content: reply });
+    handleEmpOneToOneReply(reply);
+  } catch(e) {
+    addMsg('emp-onetone-chat', 'coach', 'Error: ' + e.message);
+  } finally {
+    setLoading('emp-onetone-loading', false);
+  }
+}
+
+async function sendEmpOneToOne() {
+  const input = document.getElementById('emp-onetone-user-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMsg('emp-onetone-chat', 'user', text);
+  empOneToOneHistory.push({ role: 'user', content: text });
+  setLoading('emp-onetone-loading', true);
+  try {
+    const reply = await callAPI(EMP_ONETONE_SYSTEM, empOneToOneHistory);
+    empOneToOneHistory.push({ role: 'assistant', content: reply });
+    handleEmpOneToOneReply(reply);
+  } catch(e) {
+    addMsg('emp-onetone-chat', 'coach', 'Error: ' + e.message);
+  } finally {
+    setLoading('emp-onetone-loading', false);
+  }
+}
+
+function handleEmpOneToOneReply(reply) {
+  if (reply.includes('GENERATE_AGENDA')) {
+    const parts = reply.split('GENERATE_AGENDA');
+    const agenda = parts[parts.length - 1].trim();
+    if (parts[0].trim()) addMsg('emp-onetone-chat', 'coach', parts[0].trim());
+    document.getElementById('emp-onetone-input-row').style.display = 'none';
+    showOutput('emp-onetone-output', agenda);
+    // Advance to final step
+    document.querySelectorAll('#emp-onetone-steps .step-item').forEach(s => s.classList.add('active'));
+  } else {
+    addMsg('emp-onetone-chat', 'coach', reply);
+    // Advance step indicator based on topic keywords
+    const r = reply.toLowerCase();
+    if (r.includes('challenge') || r.includes('difficult') || r.includes('stuck')) {
+      document.getElementById('emp-onetone-step-2').classList.add('active');
+    } else if (r.includes('growth') || r.includes('develop') || r.includes('skill') || r.includes('learn')) {
+      document.getElementById('emp-onetone-step-3').classList.add('active');
+    }
+  }
+}
+
+function copyEmpOneToOne() {
+  const text = document.getElementById('emp-onetone-output-text').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const el = document.getElementById('emp-onetone-copied');
+    el.style.display = 'inline';
+    setTimeout(() => el.style.display = 'none', 2000);
+  });
+}
+
+function resetEmpOneToOne() {
+  empOneToOneHistory = [];
+  document.getElementById('emp-onetone-intro-card').style.display  = 'block';
+  document.getElementById('emp-onetone-chat-card').style.display   = 'none';
+  document.getElementById('emp-onetone-input-row').style.display   = 'flex';
+  document.getElementById('emp-onetone-output').style.display      = 'none';
+  document.getElementById('emp-onetone-chat').innerHTML            = '';
+  document.getElementById('emp-onetone-overview').value            = '';
+  document.getElementById('emp-onetone-output-text').innerHTML     = '';
+  document.querySelectorAll('#emp-onetone-steps .step-item').forEach((s,i) => {
+    s.classList.toggle('active', i === 0);
+  });
+}
+
+const EMP_PLATE_SYSTEM_DEEP = TONE + ` You are coaching an employee through the PLATE framework to help them think a problem through before bringing it to their manager.
+
+Move through five phases: Problem, Locate the root cause, Alternatives, Tell (their recommendation), Endpoint.
+
+One focused question per phase. If their answer is clear, move on immediately. The whole conversation should take eight to ten exchanges. Don't over-question — the goal is a clear, copiable summary at the end, not a therapy session.
+
+Phase guidance:
+- Problem: get a crisp definition of what actually needs solving.
+- Locate: what's the real root cause? Avoid symptom chasing.
+- Alternatives: push for three options with a brief pro and con for each.
+- Tell: they must make a recommendation and own it. Don't let them sit on the fence.
+- Endpoint: definition of done, what success looks like, and when they will update their manager.
+
+British English throughout. One question at a time. Keep it moving.
+
+When you have enough across all five phases, write exactly "GENERATE_SUMMARY" on its own line, then a clean PLATE summary the employee can copy and share with their manager. Format it clearly with each PLATE heading.`;
+
+const EMP_PLATE_SYSTEM_FAST = TONE + ` You are a warm, practical coaching assistant helping an employee think through a problem before bringing it to their manager.
+
+Keep it simple. These are everyday working problems, not complex management challenges. The person may be fairly junior, so avoid jargon, keep language plain, and don't suggest solutions that are clearly outside their control (like replacing equipment, restructuring processes, or involving HR).
+
+Ask just three focused questions, one at a time:
+1. What is the actual problem? Help them describe it simply and clearly.
+2. What have they already tried or thought about? (Including asking a colleague, checking a process, or having a quick word with someone.)
+3. Who in the organisation might be the right person to help them move this forward?
+
+Then generate a short, clear summary immediately.
+
+Tone: friendly, warm, encouraging. Remind them that coming prepared with a clear summary shows initiative and makes the conversation with their manager easier for everyone.
+
+When ready, write exactly "GENERATE_SUMMARY" on its own line, then a short plain-language summary the employee can copy and share. Use simple headings: The Problem, What I've Tried, Who Can Help, My Recommendation. Keep each section to two or three sentences maximum.`;
+
+let EMP_PLATE_SYSTEM = EMP_PLATE_SYSTEM_DEEP;
+
+async function startEmpPLATE() {
+  const overview = document.getElementById('emp-plate-overview').value.trim();
+  if (!overview) { alert('Describe the problem or task first.'); return; }
+
+  empPlateHistory = [];
+  document.getElementById('emp-plate-intro-card').style.display = 'none';
+  document.getElementById('emp-plate-chat-card').style.display = 'block';
+  updateEmpPLATEStep(1);
+
+  const opener = `The employee wants to work through a problem. Overview: ${overview}. Start by helping them define the Problem clearly — ask one focused question.`;
+  empPlateHistory.push({ role: 'user', content: opener });
+
+  setLoading('emp-plate-loading', true);
+  try {
+    const reply = await callAPI(EMP_PLATE_SYSTEM, empPlateHistory);
+    empPlateHistory.push({ role: 'assistant', content: reply });
+    handleEmpPLATEReply(reply);
+  } catch(e) {
+    addMsg('emp-plate-chat', 'coach', 'Error: ' + e.message);
+  } finally {
+    setLoading('emp-plate-loading', false);
+  }
+}
+
+async function sendEmpPLATE() {
+  const input = document.getElementById('emp-plate-user-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMsg('emp-plate-chat', 'user', text);
+  empPlateHistory.push({ role: 'user', content: text });
+
+  setLoading('emp-plate-loading', true);
+  try {
+    const reply = await callAPI(EMP_PLATE_SYSTEM, empPlateHistory);
+    empPlateHistory.push({ role: 'assistant', content: reply });
+    handleEmpPLATEReply(reply);
+  } catch(e) {
+    addMsg('emp-plate-chat', 'coach', 'Error: ' + e.message);
+  } finally {
+    setLoading('emp-plate-loading', false);
+  }
+}
+
+function handleEmpPLATEReply(reply) {
+  if (reply.includes('GENERATE_SUMMARY')) {
+    const parts = reply.split('GENERATE_SUMMARY');
+    if (parts[0].trim()) addMsg('emp-plate-chat', 'coach', parts[0].trim());
+    const summary = parts[parts.length - 1].trim();
+    document.getElementById('emp-plate-input-row').style.display = 'none';
+    updateEmpPLATEStep(5);
+    showOutput('emp-plate-output', summary);
+  } else {
+    addMsg('emp-plate-chat', 'coach', reply);
+    // Rough step advancement from keywords
+    const lower = reply.toLowerCase();
+    if (lower.includes('root cause') || lower.includes('locate')) updateEmpPLATEStep(2);
+    else if (lower.includes('alternativ') || lower.includes('option')) updateEmpPLATEStep(3);
+    else if (lower.includes('recommend') || lower.includes('tell me')) updateEmpPLATEStep(4);
+  }
+}
+
+function updateEmpPLATEStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    const s = document.getElementById('emp-plate-step-' + i);
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    if (i === n) s.classList.add('active');
+  }
+}
+
+function copyEmpPLATE() { copyText('emp-plate-output-text', 'emp-plate-copied'); }
+
+function resetEmpPLATE() {
+  empPlateHistory = [];
+  document.getElementById('emp-plate-overview').value = '';
+  document.getElementById('emp-plate-chat').innerHTML = '';
+  document.getElementById('emp-plate-intro-card').style.display = 'block';
+  document.getElementById('emp-plate-chat-card').style.display = 'none';
+  document.getElementById('emp-plate-output').classList.remove('visible');
+  document.getElementById('emp-plate-input-row').style.display = 'flex';
+  updateEmpPLATEStep(1);
+}
+
+// ─── EMPLOYEE 1-TO-1 ──────────────────────
+function toggleVoice(targetId, btnEl) {
+  if (!voiceSupported) {
+    alert('Voice input is not supported in this browser. Try Chrome or Edge.');
+    return;
+  }
+  if (activeRecognition && activeTargetId === targetId) {
+    // Already listening to this field — stop
+    activeRecognition.stop();
+    return;
+  }
+  if (activeRecognition) {
+    // Stop any other active recognition first
+    activeRecognition.stop();
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SpeechRecognition();
+  rec.continuous = true;
+  rec.interimResults = false;
+  rec.lang = 'en-GB';
+
+  activeRecognition = rec;
+  activeVoiceBtn = btnEl;
+  activeTargetId = targetId;
+
+  btnEl.classList.add('listening');
+  btnEl.innerHTML = micIcon(true) + ' Listening...';
+
+  rec.onresult = (e) => {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      transcript += e.results[i][0].transcript;
+    }
+    // Append with a space if field already has content
+    const current = el.value;
+    el.value = current ? current + ' ' + transcript.trim() : transcript.trim();
+    el.dispatchEvent(new Event('input'));
+  };
+
+  rec.onerror = (e) => {
+    console.warn('Speech error:', e.error);
+    stopVoice(btnEl);
+  };
+
+  rec.onend = () => {
+    stopVoice(btnEl);
+  };
+
+  rec.start();
+}
+
+function stopVoice(btnEl) {
+  if (btnEl) {
+    btnEl.classList.remove('listening');
+    btnEl.innerHTML = micIcon(false) + ' Voice';
+  }
+  activeRecognition = null;
+  activeVoiceBtn = null;
+  activeTargetId = null;
+}
+
+function micIcon(active) {
+  const col = active ? '#e74c3c' : 'currentColor';
+  return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`;
+}
+
+function voiceBtn(targetId) {
+  if (!voiceSupported) return '';
+  return `<button class="voice-btn" onclick="toggleVoice('${targetId}', this)" type="button">${micIcon(false)} Voice</button>`;
+}
+
+// Inject voice buttons after DOM ready
+function injectVoiceButtons() {
+  if (!voiceSupported) return;
+  const targets = [
+    'morning-p1','morning-p2','morning-p3','morning-tasks','morning-stress','morning-action',
+    'eod-wins','eod-incomplete','eod-different','eod-tomorrow',
+    'rc-overview','rc-user-input',
+    'emp-plate-overview','emp-plate-user-input',
+  
+  ];
+  targets.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // Wrap in voice-row if not already
+    if (el.parentElement.classList.contains('voice-row')) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'voice-row';
+    el.parentNode.insertBefore(wrapper, el);
+    wrapper.appendChild(el);
+    const btn = document.createElement('button');
+    btn.className = 'voice-btn';
+    btn.type = 'button';
+    btn.innerHTML = micIcon(false) + ' Voice';
+    btn.onclick = function() { toggleVoice(id, this); };
+    wrapper.appendChild(btn);
+  });
+}
+
+// ─── WELCOME SCREEN ───────────────────────
+function showWelcome(role) {
+  const skip = localStorage.getItem('tb_welcome_skip');
+  if (skip === 'true') return;
+  const overlay = document.getElementById('welcome-overlay');
+  overlay.style.display = 'flex';
+  document.getElementById('welcome-manager-content').style.display = role === 'manager' ? 'block' : 'none';
+  document.getElementById('welcome-employee-content').style.display = role === 'employee' ? 'block' : 'none';
+}
+
+function dismissWelcome(dontShow) {
+  if (dontShow) localStorage.setItem('tb_welcome_skip', 'true');
+  document.getElementById('welcome-overlay').style.display = 'none';
+}
+
+// Auto-login if a saved role exists
+(function() {
+  const savedRole = localStorage.getItem('tb_role');
+  if (savedRole === 'manager' || savedRole === 'employee') {
+    selectedRole = savedRole;
+    launchApp(savedRole);
+  }
+})();
+</script>
+</body>
+</html>
